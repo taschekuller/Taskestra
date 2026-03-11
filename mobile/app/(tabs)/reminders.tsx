@@ -67,7 +67,7 @@ export default function RemindersScreen() {
           onSelect={setSelectedProjectId}
         />
 
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
           <View style={styles.section}>
             <SectionHeader title="Today" count={todayReminders.length} />
             {todayReminders.length === 0 ? (

@@ -74,7 +74,7 @@ export default function AddNoteModal() {
 
   return (
     <GradientBackground>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.container}>
         <NoteEditor title={title} content={content} onTitleChange={setTitle} onContentChange={setContent} />
 
         <GlassCard>

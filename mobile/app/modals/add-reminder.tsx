@@ -112,7 +112,7 @@ export default function AddReminderModal() {
   return (
     <GradientBackground>
       <View style={styles.root}>
-        <ScrollView contentContainerStyle={styles.container}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.container}>
           <SectionHeader title="Reminder Details" />
           <GlassCard>
             <GlassInput

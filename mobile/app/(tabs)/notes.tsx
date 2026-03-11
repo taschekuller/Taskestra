@@ -71,7 +71,7 @@ export default function NotesScreen() {
         </View>
         <Text style={styles.subtitle}>Notlarını klasörle, pinle ve hızlıca düzenle.</Text>
 
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
           {!selectedFolderId ? (
             <View style={styles.bentoSection}>
               <BentoBoard

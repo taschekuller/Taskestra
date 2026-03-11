@@ -57,7 +57,7 @@ export default function AddFolderModal() {
 
   return (
     <GradientBackground>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.container}>
         <GlassInput label="Klasör Adı" value={name} onChangeText={setName} placeholder="Örn: İş" />
         <GlassInput label="Emoji" value={emoji} onChangeText={setEmoji} placeholder="📁" maxLength={2} />
 

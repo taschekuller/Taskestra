@@ -75,6 +75,7 @@ export default function OverviewScreen() {
     <GradientBackground>
       <Animated.View entering={FadeIn.duration(300)} style={styles.flex}>
         <ScrollView
+          showsVerticalScrollIndicator={false}
           contentContainerStyle={[styles.container, { paddingTop: insets.top + 12 }]}
           refreshControl={
             <RefreshControl

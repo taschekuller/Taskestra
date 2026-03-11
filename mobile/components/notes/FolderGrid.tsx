@@ -16,6 +16,7 @@ export const FolderGrid = ({ folders, onOpenFolder, onFolderMenu }: FolderGridPr
       keyExtractor={(item) => item.id}
       numColumns={2}
       scrollEnabled={false}
+      showsVerticalScrollIndicator={false}
       columnWrapperStyle={styles.column}
       contentContainerStyle={styles.container}
       renderItem={({ item }) => (

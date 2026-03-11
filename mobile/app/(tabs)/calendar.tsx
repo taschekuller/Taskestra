@@ -116,7 +116,10 @@ export default function CalendarScreen() {
           />
         </GlassCard>
 
-        <ScrollView contentContainerStyle={[styles.eventsContainer, { paddingBottom: 140 }]}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[styles.eventsContainer, { paddingBottom: 140 }]}
+        >
           <SectionHeader
             title={format(selectedDate, 'd MMMM, EEEE', { locale: tr })}
             count={selectedDayEvents.length}
