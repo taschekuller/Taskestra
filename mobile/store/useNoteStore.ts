@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 
-import { Colors } from '@/constants/Colors';
 import { storage } from '@/services/storage';
 import type { Note, NoteFolder, NoteFolderRecord, NoteRecord } from '@/types/models';
 import { toFolder, toNote } from '@/types/models';
@@ -49,10 +48,19 @@ interface NoteStore {
   getNoteById: (id?: string) => Note | undefined;
 }
 
+const FOLDER_BROWN_TONES = [
+  '#8C6A45',
+  '#9A7652',
+  '#A9845F',
+  '#B6906B',
+  '#C39D79',
+  '#D0A987',
+];
+
 const toFolderRecord = (input: AddFolderInput, index: number): NoteFolderRecord => ({
   id: createId(),
   name: input.name.trim(),
-  color: input.color ?? Colors.projectColors[index % Colors.projectColors.length],
+  color: input.color ?? FOLDER_BROWN_TONES[index % FOLDER_BROWN_TONES.length],
   emoji: input.emoji,
   createdAtIso: new Date().toISOString(),
 });

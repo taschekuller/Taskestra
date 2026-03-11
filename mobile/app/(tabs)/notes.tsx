@@ -1,162 +1,84 @@
 import { type Href, useRouter } from 'expo-router';
-import { format } from 'date-fns';
-import { tr } from 'date-fns/locale';
 import { useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BentoBoard } from '@/components/notes/BentoBoard';
-import { FolderGrid } from '@/components/notes/FolderGrid';
-import { BottomActionBar } from '@/components/ui/BottomActionBar';
-import { GlassButton } from '@/components/ui/GlassButton';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GradientBackground } from '@/components/ui/GradientBackground';
 import { SectionHeader } from '@/components/ui/SectionHeader';
+import { MOCK_NOTES, NOTE_CATEGORIES, type NoteCategory } from '@/constants/MockNotes';
 import { Colors } from '@/constants/Colors';
 import { Layout } from '@/constants/Layout';
-import { getFoldersWithCount, useNoteStore } from '@/store/useNoteStore';
-import { toNote } from '@/types/models';
 
 export default function NotesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const [selectedCategory, setSelectedCategory] = useState<NoteCategory>('all');
 
-  const folderRecords = useNoteStore((state) => state.folders);
-  const noteRecords = useNoteStore((state) => state.notes);
-  const deleteFolder = useNoteStore((state) => state.deleteFolder);
-  const deleteNote = useNoteStore((state) => state.deleteNote);
-
-  const [selectedFolderId, setSelectedFolderId] = useState<string | undefined>();
-
-  const folders = useMemo(() => getFoldersWithCount(folderRecords, noteRecords), [folderRecords, noteRecords]);
-  const notes = useMemo(() => noteRecords.map(toNote), [noteRecords]);
-
-  const selectedFolder = folders.find((folder) => folder.id === selectedFolderId);
-  const latestNote = notes[0];
-
-  const visibleNotes = useMemo(() => {
-    if (!selectedFolderId) {
-      return notes
-        .filter((note) => !note.folderId)
-        .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
-    }
-
-    return notes
-      .filter((note) => note.folderId === selectedFolderId)
-      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
-  }, [notes, selectedFolderId]);
+  const latestNotes = useMemo(
+    () => selectedCategory === 'all'
+      ? MOCK_NOTES
+      : MOCK_NOTES.filter((item) => item.category === selectedCategory),
+    [selectedCategory],
+  );
 
   const openCreateNote = () => {
-    const path = selectedFolderId ? `/modals/add-note?folderId=${selectedFolderId}` : '/modals/add-note';
-    router.push(path as Href);
+    router.push('/modals/add-note' as Href);
   };
 
   return (
     <GradientBackground>
-      <View style={[styles.container, { paddingTop: insets.top + 12 }]}> 
-        <View style={styles.headerRow}>
-          <View style={styles.headerLeft}>
-            {selectedFolderId ? (
-              <Pressable onPress={() => setSelectedFolderId(undefined)} style={styles.backButton}>
-                <Ionicons name="chevron-back" size={20} color={Colors.glassText} />
-              </Pressable>
-            ) : null}
-            <Text style={styles.title}>{selectedFolder?.name || 'Notlar'}</Text>
-          </View>
-
-          <Pressable onPress={() => router.push('/modals/add-folder')}>
-            <Ionicons name="add-circle" size={30} color={Colors.glassText} />
-          </Pressable>
-        </View>
-        <Text style={styles.subtitle}>Notlarını klasörle, pinle ve hızlıca düzenle.</Text>
+      <View style={[styles.container, { paddingTop: insets.top + 10 }]}>
+        <Text style={styles.title}>Notlar</Text>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-          {!selectedFolderId ? (
-            <View style={styles.bentoSection}>
-              <BentoBoard
-                noteCount={notes.length}
-                folderCount={folders.length}
-                latestNoteTitle={latestNote?.title}
-                onCreateNote={openCreateNote}
-                onOpenFolders={() => setSelectedFolderId(undefined)}
-              />
-            </View>
-          ) : null}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoryScroll}
+          >
+            {NOTE_CATEGORIES.map((category) => {
+              const active = selectedCategory === category.key;
 
-          {!selectedFolderId ? (
-            <View style={styles.notesHeader}>
-              <SectionHeader title="Klasörler" count={folders.length} />
-              <Pressable onPress={() => router.push('/modals/add-folder')}>
-                <Ionicons name="add" size={22} color={Colors.glassText} />
-              </Pressable>
-            </View>
-          ) : null}
-
-          {!selectedFolderId ? (
-            <FolderGrid
-              folders={folders}
-              onOpenFolder={setSelectedFolderId}
-              onFolderMenu={(folderId) => {
-                Alert.alert('Klasör', 'Ne yapmak istersiniz?', [
-                  {
-                    text: 'Düzenle',
-                    onPress: () => router.push(`/modals/add-folder?id=${folderId}`),
-                  },
-                  {
-                    text: 'Sil',
-                    style: 'destructive',
-                    onPress: () => deleteFolder(folderId),
-                  },
-                  { text: 'İptal', style: 'cancel' },
-                ]);
-              }}
-            />
-          ) : null}
-
-          <View style={styles.notesHeader}>
-            <SectionHeader title="Notlar" count={visibleNotes.length} />
-            <Pressable onPress={openCreateNote}>
-              <Ionicons name="add" size={24} color={Colors.glassText} />
-            </Pressable>
-          </View>
-
-          {visibleNotes.length === 0 ? (
-            <GlassCard>
-              <Text style={styles.emptyText}>Henüz not bulunmuyor.</Text>
-            </GlassCard>
-          ) : (
-            visibleNotes.map((note) => (
-              <Pressable key={note.id} onPress={() => router.push(`/modals/add-note?noteId=${note.id}`)}>
-                <GlassCard style={styles.noteCard}>
-                  <Text style={styles.noteTitle}>{note.title || 'Başlıksız Not'}</Text>
-                  <Text style={styles.noteDate}>
-                    Güncellendi: {format(note.updatedAt, 'd MMM yyyy HH:mm', { locale: tr })}
+              return (
+                <Pressable
+                  key={category.key}
+                  style={[styles.categoryChip, active && styles.categoryChipActive]}
+                  onPress={() => setSelectedCategory(category.key)}
+                >
+                  <Text style={[styles.categoryChipText, active && styles.categoryChipTextActive]}>
+                    {category.label}
                   </Text>
-                  <Pressable
-                    style={styles.deleteButton}
-                    onPress={() => {
-                      Alert.alert('Not silinsin mi?', note.title || 'Başlıksız not', [
-                        { text: 'İptal', style: 'cancel' },
-                        {
-                          text: 'Sil',
-                          style: 'destructive',
-                          onPress: () => deleteNote(note.id),
-                        },
-                      ]);
-                    }}
-                  >
-                    <Ionicons name="trash-outline" size={16} color={Colors.glassSubtext} />
-                  </Pressable>
-                </GlassCard>
-              </Pressable>
-            ))
-          )}
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+
+          <View style={styles.latestSection}>
+            <SectionHeader title="Son Notlar" count={latestNotes.length} />
+            <View style={styles.latestGrid}>
+              {latestNotes.map((item) => (
+                <Pressable key={item.id} style={styles.latestGridItem} onPress={openCreateNote}>
+                  <GlassCard style={styles.latestCard} contentStyle={[styles.latestCardContent, { backgroundColor: item.tint }]}>
+                    <Text style={styles.latestCategory}>{item.category.toUpperCase()}</Text>
+                    <Text numberOfLines={2} style={styles.latestTitle}>{item.title}</Text>
+                    <Text style={styles.latestDate}>{item.dateLabel}</Text>
+                  </GlassCard>
+                </Pressable>
+              ))}
+            </View>
+          </View>
         </ScrollView>
 
-        <BottomActionBar>
-          <GlassButton title="Yeni Not" onPress={openCreateNote} variant="primary" />
-        </BottomActionBar>
+        <View style={[styles.fabStack, { bottom: insets.bottom + 74 }]}>
+          <Pressable style={[styles.fab, styles.fabSecondary]} onPress={() => router.push('/modals/add-folder')}>
+            <Ionicons name="folder-open-outline" size={18} color={Colors.glassText} />
+          </Pressable>
+          <Pressable style={[styles.fab, styles.fabPrimary]} onPress={openCreateNote}>
+            <Ionicons name="add" size={24} color={Colors.noteAccentText} />
+          </Pressable>
+        </View>
       </View>
     </GradientBackground>
   );
@@ -167,69 +89,101 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: Layout.spacing.md,
   },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  title: {
+    color: Colors.text.primary,
+    ...Layout.type.title2,
+    fontWeight: '800',
   },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  scrollContent: {
+    paddingTop: Layout.spacing.sm,
+    paddingBottom: 140,
+    gap: Layout.spacing.sm,
+  },
+  categoryScroll: {
     gap: Layout.spacing.xs,
+    paddingBottom: Layout.spacing.xs,
   },
-  backButton: {
-    width: 30,
-    height: 30,
+  categoryChip: {
+    minHeight: 34,
+    borderRadius: Layout.radius.pill,
+    borderWidth: 1,
+    borderColor: Colors.border.soft,
+    backgroundColor: 'transparent',
+    paddingHorizontal: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: {
+  categoryChipActive: {
+    borderColor: Colors.noteAccentStrong,
+    backgroundColor: 'rgba(244,217,107,0.15)',
+  },
+  categoryChipText: {
+    color: Colors.text.secondary,
+    ...Layout.type.caption,
+    fontWeight: '600',
+  },
+  categoryChipTextActive: {
     color: Colors.text.primary,
-    ...Layout.type.title1,
-    fontWeight: '800',
   },
-  subtitle: {
-    marginTop: Layout.spacing.xxs,
-    color: Colors.text.secondary,
-    ...Layout.type.caption,
-  },
-  scrollContent: {
-    paddingTop: Layout.spacing.md,
-    paddingBottom: 180,
-    gap: Layout.spacing.sm,
-  },
-  bentoSection: {
-    marginBottom: Layout.spacing.xxs,
-  },
-  notesHeader: {
-    marginTop: Layout.spacing.sm,
+  latestSection: {
     marginBottom: Layout.spacing.xs,
+  },
+  latestGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Layout.spacing.xs,
+  },
+  latestGridItem: {
+    width: '48%',
+  },
+  latestCard: {
+    aspectRatio: 1,
+  },
+  latestCardContent: {
+    flex: 1,
     justifyContent: 'space-between',
-    alignItems: 'center',
   },
-  emptyText: {
+  latestCategory: {
     color: Colors.text.secondary,
-    ...Layout.type.caption,
+    ...Layout.type.meta,
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
-  noteCard: {
-    marginBottom: Layout.spacing.xs,
-    position: 'relative',
-  },
-  noteTitle: {
+  latestTitle: {
     color: Colors.text.primary,
     ...Layout.type.bodyStrong,
     fontWeight: '700',
-    marginBottom: Layout.spacing.xxs,
-    paddingRight: 24,
+    marginTop: Layout.spacing.xs,
   },
-  noteDate: {
-    color: Colors.text.secondary,
+  latestDate: {
+    color: Colors.text.tertiary,
     ...Layout.type.meta,
+    marginTop: Layout.spacing.sm,
   },
-  deleteButton: {
+  fabStack: {
     position: 'absolute',
-    top: 8,
-    right: 8,
+    right: Layout.spacing.md,
+    gap: Layout.spacing.xs,
+    alignItems: 'center',
+  },
+  fab: {
+    borderRadius: Layout.radius.pill,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...Layout.shadow.ios,
+    ...Layout.shadow.android,
+  },
+  fabSecondary: {
+    width: 42,
+    height: 42,
+    backgroundColor: Colors.surface.level2,
+    borderColor: Colors.border.strong,
+  },
+  fabPrimary: {
+    width: 56,
+    height: 56,
+    backgroundColor: Colors.noteAccent,
+    borderColor: Colors.noteAccentStrong,
   },
 });

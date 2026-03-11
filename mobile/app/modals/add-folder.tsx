@@ -1,14 +1,18 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { ColorPicker } from '@/components/ui/ColorPicker';
 import { GlassButton } from '@/components/ui/GlassButton';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GlassInput } from '@/components/ui/GlassInput';
 import { GradientBackground } from '@/components/ui/GradientBackground';
 import { Colors } from '@/constants/Colors';
 import { useNoteStore } from '@/store/useNoteStore';
+
+const EMOJI_OPTIONS = [
+  '📝', '📁', '📚', '💼', '🏃', '🎓', '💡', '📌', '✅', '🧠',
+  '🎯', '📎', '🗂️', '🗒️', '📒', '💻', '🎵', '🛒', '✈️', '❤️',
+] as const;
 
 export default function AddFolderModal() {
   const router = useRouter();
@@ -28,7 +32,6 @@ export default function AddFolderModal() {
 
   const [name, setName] = useState('');
   const [emoji, setEmoji] = useState('📝');
-  const [color, setColor] = useState<string>(Colors.projectColors[0]);
 
   useEffect(() => {
     if (!existingFolder) {
@@ -37,7 +40,6 @@ export default function AddFolderModal() {
 
     setName(existingFolder.name);
     setEmoji(existingFolder.emoji || '📝');
-    setColor(existingFolder.color);
   }, [existingFolder]);
 
   const onSave = () => {
@@ -47,9 +49,9 @@ export default function AddFolderModal() {
     }
 
     if (existingFolder) {
-      updateFolder(existingFolder.id, { name, emoji, color });
+      updateFolder(existingFolder.id, { name, emoji });
     } else {
-      addFolder({ name, emoji, color });
+      addFolder({ name, emoji });
     }
 
     router.back();
@@ -58,15 +60,28 @@ export default function AddFolderModal() {
   return (
     <GradientBackground>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.container}>
-        <GlassInput label="Klasör Adı" value={name} onChangeText={setName} placeholder="Örn: İş" />
-        <GlassInput label="Emoji" value={emoji} onChangeText={setEmoji} placeholder="📁" maxLength={2} />
+        <GlassInput label="Klasör Adı" value={name} onChangeText={setName} placeholder="Örn: Work" />
 
         <GlassCard>
-          <Text style={styles.sectionTitle}>Renk</Text>
-          <ColorPicker selectedColor={color} onSelect={setColor} />
+          <Text style={styles.sectionTitle}>Emoji Seç</Text>
+          <View style={styles.emojiGrid}>
+            {EMOJI_OPTIONS.map((item) => {
+              const selected = item === emoji;
+
+              return (
+                <Pressable
+                  key={item}
+                  style={[styles.emojiOption, selected && styles.emojiOptionSelected]}
+                  onPress={() => setEmoji(item)}
+                >
+                  <Text style={styles.emojiText}>{item}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
         </GlassCard>
 
-        <GlassButton title={existingFolder ? 'Güncelle' : 'Kaydet'} onPress={onSave} />
+        <GlassButton title={existingFolder ? 'Güncelle' : 'Kaydet'} onPress={onSave} variant="primary" />
       </ScrollView>
     </GradientBackground>
   );
@@ -79,9 +94,31 @@ const styles = StyleSheet.create({
     paddingBottom: 42,
   },
   sectionTitle: {
-    color: Colors.glassText,
+    color: Colors.text.primary,
     fontSize: 14,
     fontWeight: '700',
     marginBottom: 10,
+  },
+  emojiGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  emojiOption: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.border.soft,
+    backgroundColor: Colors.surface.level1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emojiOptionSelected: {
+    borderColor: Colors.noteAccentStrong,
+    backgroundColor: Colors.noteAccentSoft,
+  },
+  emojiText: {
+    fontSize: 22,
   },
 });

@@ -102,7 +102,7 @@ const AnimatedTabButton = ({
       style={styles.tabButton}
     >
       <Animated.View style={[styles.tabContent, iconStyle]}>
-        <Ionicons name={focused ? activeIcon : inactiveIcon} size={22} color={Colors.glassText} />
+        <Ionicons name={focused ? activeIcon : inactiveIcon} size={20} color={Colors.glassText} />
         <Text style={[styles.tabLabel, focused && styles.tabLabelFocused]}>{label}</Text>
       </Animated.View>
     </Pressable>
@@ -147,7 +147,10 @@ export const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) =>
     setBarWidth(event.nativeEvent.layout.width);
   };
 
-  const bottomOffset = useMemo(() => 16 + (Platform.OS === 'ios' ? insets.bottom : 0), [insets.bottom]);
+  const bottomOffset = useMemo(
+    () => Math.max(6, Platform.OS === 'ios' ? insets.bottom * 0.15 : 8),
+    [insets.bottom],
+  );
 
   const content = (
     <View style={styles.inner} onLayout={onLayout}>
@@ -237,9 +240,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(10,17,37,0.8)',
   },
   inner: {
-    minHeight: 64,
+    minHeight: 58,
     paddingHorizontal: TAB_HORIZONTAL_PADDING,
-    paddingVertical: 8,
+    paddingVertical: 6,
     flexDirection: 'row',
     alignItems: 'stretch',
     position: 'relative',
@@ -265,7 +268,7 @@ const styles = StyleSheet.create({
   },
   tabLabel: {
     color: Colors.glassSubtext,
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
   },
   tabLabelFocused: {
