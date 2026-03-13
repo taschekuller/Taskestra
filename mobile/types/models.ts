@@ -1,5 +1,6 @@
 export type Priority = 'low' | 'medium' | 'high';
 export type RepeatType = 'none' | 'daily' | 'weekly' | 'monthly';
+export type ReminderListKey = 'work' | 'personal' | 'sport' | 'university' | 'others';
 
 export interface Task {
   id: string;
@@ -44,6 +45,7 @@ export interface Reminder {
   title: string;
   notes?: string;
   dueDate: Date;
+  listKey: ReminderListKey;
   repeatType: RepeatType;
   isCompleted: boolean;
   notificationId?: string;
@@ -55,6 +57,7 @@ export interface ReminderRecord {
   title: string;
   notes?: string;
   dueDateIso: string;
+  listKey?: ReminderListKey;
   repeatType: RepeatType;
   isCompleted: boolean;
   notificationId?: string;
@@ -120,6 +123,7 @@ export const toReminder = (reminder: ReminderRecord): Reminder => ({
   title: reminder.title,
   notes: reminder.notes,
   dueDate: new Date(reminder.dueDateIso),
+  listKey: reminder.listKey === 'work' ? 'work' : 'others',
   repeatType: reminder.repeatType,
   isCompleted: reminder.isCompleted,
   notificationId: reminder.notificationId,

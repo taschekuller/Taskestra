@@ -4,7 +4,7 @@ import { immer } from 'zustand/middleware/immer';
 
 import { cancelReminder, reconcileScheduledReminders, scheduleReminder } from '@/services/notifications';
 import { storage } from '@/services/storage';
-import type { Reminder, ReminderRecord, RepeatType } from '@/types/models';
+import type { Reminder, ReminderListKey, ReminderRecord, RepeatType } from '@/types/models';
 import { toReminder } from '@/types/models';
 import { createId } from '@/utils/id';
 
@@ -12,6 +12,7 @@ export interface AddReminderInput {
   title: string;
   notes?: string;
   dueDate: Date;
+  listKey?: ReminderListKey;
   repeatType?: RepeatType;
 }
 
@@ -19,6 +20,7 @@ export interface UpdateReminderInput {
   title?: string;
   notes?: string;
   dueDate?: Date;
+  listKey?: ReminderListKey;
   repeatType?: RepeatType;
   isCompleted?: boolean;
 }
@@ -38,6 +40,7 @@ const toRecord = (input: AddReminderInput, id: string): ReminderRecord => ({
   title: input.title.trim(),
   notes: input.notes,
   dueDateIso: input.dueDate.toISOString(),
+  listKey: input.listKey === 'work' ? 'work' : 'others',
   repeatType: input.repeatType ?? 'none',
   isCompleted: false,
   createdAtIso: new Date().toISOString(),
@@ -102,6 +105,9 @@ export const useReminderStore = create<ReminderStore>()(
           title: updates.title ?? found.title,
           notes: updates.notes ?? found.notes,
           dueDateIso: updates.dueDate ? updates.dueDate.toISOString() : found.dueDateIso,
+          listKey: updates.listKey
+            ? (updates.listKey === 'work' ? 'work' : 'others')
+            : (found.listKey === 'work' ? 'work' : 'others'),
           repeatType: updates.repeatType ?? found.repeatType,
           isCompleted: updates.isCompleted ?? found.isCompleted,
           notificationId: undefined,

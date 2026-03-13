@@ -62,10 +62,9 @@ export const NoteEditor = ({ title, content, onTitleChange, onContentChange }: N
 const styles = StyleSheet.create({
   container: {
     gap: 12,
-    flex: 1,
   },
   editorWrap: {
-    minHeight: 260,
+    minHeight: 360,
     borderWidth: 1,
     borderColor: Colors.glassBorder,
     borderRadius: 16,
@@ -73,7 +72,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   editor: {
-    minHeight: 260,
+    minHeight: 360,
     paddingHorizontal: 12,
   },
   toolbar: {

@@ -10,10 +10,12 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { GlassInput } from '@/components/ui/GlassInput';
 import { GradientBackground } from '@/components/ui/GradientBackground';
 import { SectionHeader } from '@/components/ui/SectionHeader';
+import { getReminderLists } from '@/constants/ReminderLists';
 import { Colors } from '@/constants/Colors';
 import { Layout } from '@/constants/Layout';
+import { useNoteStore } from '@/store/useNoteStore';
 import { useReminderStore } from '@/store/useReminderStore';
-import { toReminder, type RepeatType } from '@/types/models';
+import { toReminder, type ReminderListKey, type RepeatType } from '@/types/models';
 
 const repeatTypes: RepeatType[] = ['none', 'daily', 'weekly', 'monthly'];
 
@@ -40,6 +42,7 @@ export default function AddReminderModal() {
   const reminderRecords = useReminderStore((state) => state.reminders);
   const addReminder = useReminderStore((state) => state.addReminder);
   const updateReminder = useReminderStore((state) => state.updateReminder);
+  const folderRecords = useNoteStore((state) => state.folders);
 
   const existingReminder = useMemo(() => {
     if (!params.id) {
@@ -53,6 +56,7 @@ export default function AddReminderModal() {
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
   const [dueDateInput, setDueDateInput] = useState(format(new Date(), 'yyyy-MM-dd HH:mm'));
+  const [listKey, setListKey] = useState<ReminderListKey>('others');
   const [repeatType, setRepeatType] = useState<RepeatType>('none');
 
   useEffect(() => {
@@ -63,6 +67,7 @@ export default function AddReminderModal() {
     setTitle(existingReminder.title);
     setNotes(existingReminder.notes || '');
     setDueDateInput(format(existingReminder.dueDate, 'yyyy-MM-dd HH:mm'));
+    setListKey(existingReminder.listKey);
     setRepeatType(existingReminder.repeatType);
   }, [existingReminder]);
 
@@ -70,6 +75,14 @@ export default function AddReminderModal() {
   const repeatPreview = useMemo(
     () => (isValid(parsedDate) ? getRepeatPreview(repeatType, parsedDate) : 'Please enter a valid date'),
     [parsedDate, repeatType],
+  );
+  const workFolderColor = useMemo(
+    () => folderRecords.find((folder) => folder.name.trim().toLowerCase() === 'work')?.color,
+    [folderRecords],
+  );
+  const listOptions = useMemo(
+    () => getReminderLists(workFolderColor),
+    [workFolderColor],
   );
 
   const onSave = async () => {
@@ -88,6 +101,7 @@ export default function AddReminderModal() {
         title,
         notes,
         dueDate: parsedDate,
+        listKey,
         repeatType,
       });
     } else {
@@ -95,6 +109,7 @@ export default function AddReminderModal() {
         title,
         notes,
         dueDate: parsedDate,
+        listKey,
         repeatType,
       });
     }
@@ -146,6 +161,21 @@ export default function AddReminderModal() {
                   label={value.toUpperCase()}
                   selected={repeatType === value}
                   onPress={() => setRepeatType(value)}
+                />
+              ))}
+            </View>
+          </GlassCard>
+
+          <SectionHeader title="List" />
+          <GlassCard>
+            <View style={styles.chipWrap}>
+              {listOptions.map((option) => (
+                <Chip
+                  key={option.key}
+                  label={option.label}
+                  selected={listKey === option.key}
+                  accentColor={option.key === 'work' ? (workFolderColor ?? '#9A7652') : undefined}
+                  onPress={() => setListKey(option.key as ReminderListKey)}
                 />
               ))}
             </View>

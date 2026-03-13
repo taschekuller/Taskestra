@@ -1,4 +1,4 @@
-export type NoteCategory = 'all' | 'work' | 'personal' | 'sport' | 'university';
+export type NoteCategory = 'all' | 'work' | 'others';
 
 export interface NoteCategoryItem {
   key: NoteCategory;
@@ -17,10 +17,8 @@ export interface MockNoteItem {
 
 export const NOTE_CATEGORIES: NoteCategoryItem[] = [
   { key: 'all', label: 'All' },
-  { key: 'work', label: 'Work', accentColor: '#4ECDC4' },
-  { key: 'personal', label: 'Personal', accentColor: '#FFB4A2' },
-  { key: 'sport', label: 'Sport', accentColor: '#7CD992' },
-  { key: 'university', label: 'University', accentColor: '#8AA8FF' },
+  { key: 'work', label: 'Work', accentColor: '#9A7652' },
+  { key: 'others', label: 'Others', accentColor: '#6B7280' },
 ];
 
 export const MOCK_NOTES: MockNoteItem[] = [
@@ -30,46 +28,46 @@ export const MOCK_NOTES: MockNoteItem[] = [
     excerpt: 'Finalize Q2 roadmap items and assign clear ownership.',
     dateLabel: '11 Mar 2026',
     category: 'work',
-    tint: 'rgba(78,205,196,0.18)',
+    tint: 'rgba(154,118,82,0.26)',
   },
   {
-    id: 'mock-personal-1',
+    id: 'mock-other-1',
     title: 'Weekend Plan',
     excerpt: 'Saturday morning run, bookstore, and evening meet-up.',
     dateLabel: '10 Mar 2026',
-    category: 'personal',
-    tint: 'rgba(255,180,162,0.2)',
-  },
-  {
-    id: 'mock-sport-1',
-    title: 'Gym Split',
-    excerpt: 'Update Push/Pull/Legs split and optimize set volume.',
-    dateLabel: '09 Mar 2026',
-    category: 'sport',
-    tint: 'rgba(124,217,146,0.18)',
-  },
-  {
-    id: 'mock-uni-1',
-    title: 'Data Structures',
-    excerpt: 'Review heap and graph notes, then write a short summary.',
-    dateLabel: '08 Mar 2026',
-    category: 'university',
-    tint: 'rgba(138,168,255,0.2)',
+    category: 'others',
+    tint: 'rgba(107,114,128,0.22)',
   },
   {
     id: 'mock-work-2',
+    title: 'Gym Split',
+    excerpt: 'Update Push/Pull/Legs split and optimize set volume.',
+    dateLabel: '09 Mar 2026',
+    category: 'work',
+    tint: 'rgba(140,106,69,0.24)',
+  },
+  {
+    id: 'mock-other-2',
+    title: 'Data Structures',
+    excerpt: 'Review heap and graph notes, then write a short summary.',
+    dateLabel: '08 Mar 2026',
+    category: 'others',
+    tint: 'rgba(148,163,184,0.2)',
+  },
+  {
+    id: 'mock-work-3',
     title: 'Design Review',
     excerpt: 'Review empty-state and CTA improvements in the new Notes flow.',
     dateLabel: '07 Mar 2026',
     category: 'work',
-    tint: 'rgba(78,205,196,0.14)',
+    tint: 'rgba(169,132,95,0.24)',
   },
   {
-    id: 'mock-personal-2',
+    id: 'mock-other-3',
     title: 'Reading List',
     excerpt: 'Books to finish: Deep Work, Atomic Habits, Hooked.',
     dateLabel: '06 Mar 2026',
-    category: 'personal',
-    tint: 'rgba(255,180,162,0.14)',
+    category: 'others',
+    tint: 'rgba(107,114,128,0.18)',
   },
 ];

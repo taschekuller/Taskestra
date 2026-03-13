@@ -48,6 +48,7 @@ export const GlassButton = ({
         style,
       ]}
     >
+      <View pointerEvents="none" style={styles.highlightLayer} />
       <View style={styles.row}>
         {icon}
         <Text style={[styles.text, textStyle]}>{title}</Text>
@@ -63,6 +64,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 14,
+    overflow: 'hidden',
+    ...Layout.shadow.ios,
+    ...Layout.shadow.android,
   },
   md: {
     minHeight: 50,
@@ -71,16 +75,20 @@ const styles = StyleSheet.create({
     minHeight: 38,
   },
   primary: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
+    backgroundColor: 'rgba(79,140,255,0.9)',
+    borderColor: 'rgba(167,201,255,0.74)',
   },
   secondary: {
-    backgroundColor: Colors.surface.level2,
+    backgroundColor: Colors.surface.level3,
     borderColor: Colors.border.strong,
   },
   surface: {
-    backgroundColor: Colors.surface.level1,
+    backgroundColor: Colors.surface.level2,
     borderColor: Colors.border.soft,
+  },
+  highlightLayer: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255,255,255,0.08)',
   },
   row: {
     flexDirection: 'row',
@@ -98,7 +106,7 @@ const styles = StyleSheet.create({
     color: '#F8FBFF',
   },
   pressed: {
-    transform: [{ scale: 0.98 }],
+    transform: [{ scale: 0.985 }],
     opacity: 0.92,
   },
   disabled: {

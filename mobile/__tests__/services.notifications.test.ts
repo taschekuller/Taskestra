@@ -5,6 +5,7 @@ const baseReminder: Reminder = {
   id: '1',
   title: 'Test',
   dueDate: new Date('2026-03-10T09:30:00.000Z'),
+  listKey: 'others',
   repeatType: 'none',
   isCompleted: false,
   createdAt: new Date('2026-03-10T09:00:00.000Z'),

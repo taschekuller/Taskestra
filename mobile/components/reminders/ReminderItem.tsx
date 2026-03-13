@@ -5,6 +5,7 @@ import { Swipeable } from 'react-native-gesture-handler';
 
 import { GlassBadge } from '@/components/ui/GlassBadge';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { getReminderListMap } from '@/constants/ReminderLists';
 import { Colors } from '@/constants/Colors';
 import { Layout } from '@/constants/Layout';
 import type { Reminder } from '@/types/models';
@@ -13,6 +14,9 @@ interface ReminderItemProps {
   reminder: Reminder;
   onComplete: (id: string) => void;
   onOpenMenu: (id: string) => void;
+  compact?: boolean;
+  showListTag?: boolean;
+  workColor?: string;
 }
 
 const repeatLabel: Record<Reminder['repeatType'], string> = {
@@ -26,7 +30,13 @@ export const ReminderItem = ({
   reminder,
   onComplete,
   onOpenMenu,
+  compact = false,
+  showListTag = true,
+  workColor,
 }: ReminderItemProps) => {
+  const listMap = getReminderListMap(workColor);
+  const listMeta = listMap[reminder.listKey];
+
   return (
     <Swipeable
       renderRightActions={() => (
@@ -39,7 +49,8 @@ export const ReminderItem = ({
     >
       <Pressable onLongPress={() => onOpenMenu(reminder.id)} delayLongPress={260}>
         <GlassCard
-          style={styles.card}
+          style={[styles.card, compact && styles.cardCompact]}
+          contentStyle={compact && styles.compactContent}
         >
           <View style={styles.row}>
             <View style={styles.content}>
@@ -47,9 +58,15 @@ export const ReminderItem = ({
 
               <View style={styles.metaRow}>
                 <Text style={styles.metaText}>{format(reminder.dueDate, 'd MMM HH:mm')}</Text>
+                {showListTag ? (
+                  <View style={[styles.listTag, { backgroundColor: listMeta.tint, borderColor: listMeta.borderColor }]}>
+                    <Ionicons name={listMeta.icon as keyof typeof Ionicons.glyphMap} size={12} color={Colors.text.secondary} />
+                    <Text style={styles.listTagText}>{listMeta.label}</Text>
+                  </View>
+                ) : null}
               </View>
 
-              <GlassBadge label={repeatLabel[reminder.repeatType]} tone="neutral" />
+              <GlassBadge label={repeatLabel[reminder.repeatType]} tone="neutral" style={compact && styles.compactBadge} />
             </View>
 
             <Pressable hitSlop={10} onPress={() => onComplete(reminder.id)}>
@@ -69,6 +86,13 @@ export const ReminderItem = ({
 const styles = StyleSheet.create({
   card: {
     marginBottom: Layout.spacing.xs,
+  },
+  cardCompact: {
+    marginBottom: Layout.spacing.xxs,
+  },
+  compactContent: {
+    paddingVertical: Layout.spacing.sm,
+    paddingHorizontal: Layout.spacing.sm,
   },
   row: {
     flexDirection: 'row',
@@ -96,6 +120,24 @@ const styles = StyleSheet.create({
   metaText: {
     color: Colors.text.secondary,
     ...Layout.type.meta,
+  },
+  listTag: {
+    borderRadius: Layout.radius.pill,
+    borderWidth: 1,
+    borderColor: Colors.border.soft,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  listTagText: {
+    color: Colors.text.secondary,
+    ...Layout.type.meta,
+    fontWeight: '600',
+  },
+  compactBadge: {
+    paddingVertical: 2,
   },
   swipeAction: {
     backgroundColor: 'rgba(79,140,255,0.34)',

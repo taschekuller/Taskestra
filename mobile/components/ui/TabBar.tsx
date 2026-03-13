@@ -148,7 +148,7 @@ export const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) =>
   };
 
   const bottomOffset = useMemo(
-    () => Math.max(6, Platform.OS === 'ios' ? insets.bottom * 0.15 : 8),
+    () => (Platform.OS === 'ios' ? Math.max(2, insets.bottom - 4) : 8),
     [insets.bottom],
   );
 

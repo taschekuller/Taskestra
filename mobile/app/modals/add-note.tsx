@@ -3,10 +3,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { NoteEditor } from '@/components/notes/NoteEditor';
+import { Chip } from '@/components/ui/Chip';
 import { GlassButton } from '@/components/ui/GlassButton';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GradientBackground } from '@/components/ui/GradientBackground';
 import { Colors } from '@/constants/Colors';
+import { Layout } from '@/constants/Layout';
 import { useNoteStore } from '@/store/useNoteStore';
 import { toNote } from '@/types/models';
 
@@ -31,7 +33,7 @@ export default function AddNoteModal() {
   const [noteId, setNoteId] = useState<string | undefined>(existingNote?.id);
   const [title, setTitle] = useState(existingNote?.title ?? '');
   const [content, setContent] = useState(existingNote?.content ?? '');
-  const [folderId, setFolderId] = useState(existingNote?.folderId ?? params.folderId);
+  const [folderId, setFolderId] = useState(existingNote?.folderId ?? params.folderId ?? 'others');
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(existingNote?.updatedAt ?? null);
 
   useEffect(() => {
@@ -42,7 +44,7 @@ export default function AddNoteModal() {
     setNoteId(existingNote.id);
     setTitle(existingNote.title);
     setContent(existingNote.content);
-    setFolderId(existingNote.folderId);
+    setFolderId(existingNote.folderId ?? 'others');
     setLastSavedAt(existingNote.updatedAt);
   }, [existingNote]);
 
@@ -54,12 +56,12 @@ export default function AddNoteModal() {
 
     const timeout = setTimeout(() => {
       if (noteId) {
-        updateNote(noteId, { title, content, folderId });
+        updateNote(noteId, { title, content, folderId: folderId === 'others' ? undefined : folderId });
         setLastSavedAt(new Date());
         return;
       }
 
-      const createdId = addNote({ title, content, folderId });
+      const createdId = addNote({ title, content, folderId: folderId === 'others' ? undefined : folderId });
       setNoteId(createdId);
       setLastSavedAt(new Date());
     }, 500);
@@ -75,17 +77,18 @@ export default function AddNoteModal() {
         <GlassCard>
           <Text style={styles.sectionTitle}>Folder</Text>
           <View style={styles.chipWrap}>
-            <GlassButton
-              title="Others"
-              onPress={() => setFolderId(undefined)}
-              style={[styles.chip, !folderId && styles.selected]}
+            <Chip
+              label="Others"
+              selected={folderId === 'others'}
+              onPress={() => setFolderId('others')}
             />
             {folders.map((folder) => (
-              <GlassButton
+              <Chip
                 key={folder.id}
-                title={folder.name}
+                label={folder.name}
+                selected={folderId === folder.id}
+                accentColor={folder.color}
                 onPress={() => setFolderId(folder.id)}
-                style={[styles.chip, folderId === folder.id && styles.selected, { borderColor: folder.color }]}
               />
             ))}
           </View>
@@ -101,31 +104,24 @@ export default function AddNoteModal() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
-    paddingBottom: 42,
-    gap: 12,
-    flexGrow: 1,
+    padding: Layout.spacing.md,
+    paddingBottom: Layout.spacing.lg,
+    gap: Layout.spacing.sm,
   },
   sectionTitle: {
     color: Colors.glassText,
-    fontSize: 14,
+    ...Layout.type.caption,
     fontWeight: '700',
-    marginBottom: 10,
+    marginBottom: Layout.spacing.xs,
   },
   chipWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-  },
-  chip: {
-    minWidth: 90,
-  },
-  selected: {
-    opacity: 1,
+    gap: Layout.spacing.xs,
   },
   savedText: {
     color: Colors.glassSubtext,
     textAlign: 'right',
-    fontSize: 12,
+    ...Layout.type.meta,
   },
 });

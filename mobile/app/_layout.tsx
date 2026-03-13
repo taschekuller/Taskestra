@@ -34,11 +34,17 @@ export default function RootLayout() {
           />
           <Stack.Screen
             name="modals/add-reminder"
-            options={{ title: 'New Reminder', presentation: 'modal' }}
+            options={({ route }) => ({
+              title: (route.params as { id?: string } | undefined)?.id ? 'Edit Reminder' : 'New Reminder',
+              presentation: 'modal',
+            })}
           />
           <Stack.Screen
             name="modals/add-note"
-            options={{ title: 'Edit Note', presentation: 'modal' }}
+            options={({ route }) => ({
+              title: (route.params as { noteId?: string } | undefined)?.noteId ? 'Edit Note' : 'New Note',
+              presentation: 'modal',
+            })}
           />
           <Stack.Screen
             name="modals/add-folder"

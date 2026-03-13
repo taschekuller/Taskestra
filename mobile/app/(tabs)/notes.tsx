@@ -6,15 +6,22 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GradientBackground } from '@/components/ui/GradientBackground';
+import { LiquidFab } from '@/components/ui/LiquidFab';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { MOCK_NOTES, NOTE_CATEGORIES, type NoteCategory } from '@/constants/MockNotes';
 import { Colors } from '@/constants/Colors';
 import { Layout } from '@/constants/Layout';
+import { useNoteStore } from '@/store/useNoteStore';
 
 export default function NotesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [selectedCategory, setSelectedCategory] = useState<NoteCategory>('all');
+  const folderRecords = useNoteStore((state) => state.folders);
+  const workFolderColor = useMemo(
+    () => folderRecords.find((folder) => folder.name.trim().toLowerCase() === 'work')?.color ?? '#9A7652',
+    [folderRecords],
+  );
 
   const latestNotes = useMemo(
     () => selectedCategory === 'all'
@@ -44,7 +51,11 @@ export default function NotesScreen() {
               return (
                 <Pressable
                   key={category.key}
-                  style={[styles.categoryChip, active && styles.categoryChipActive]}
+                  style={[
+                    styles.categoryChip,
+                    active && styles.categoryChipActive,
+                    active && category.key === 'work' ? { borderColor: workFolderColor, backgroundColor: `${workFolderColor}24` } : null,
+                  ]}
                   onPress={() => setSelectedCategory(category.key)}
                 >
                   <Text style={[styles.categoryChipText, active && styles.categoryChipTextActive]}>
@@ -60,7 +71,15 @@ export default function NotesScreen() {
             <View style={styles.latestGrid}>
               {latestNotes.map((item) => (
                 <Pressable key={item.id} style={styles.latestGridItem} onPress={openCreateNote}>
-                  <GlassCard style={styles.latestCard} contentStyle={[styles.latestCardContent, { backgroundColor: item.tint }]}>
+                  <GlassCard
+                    style={styles.latestCard}
+                    contentStyle={[
+                      styles.latestCardContent,
+                      {
+                        backgroundColor: item.category === 'work' ? `${workFolderColor}2C` : item.tint,
+                      },
+                    ]}
+                  >
                     <Text style={styles.latestCategory}>{item.category.toUpperCase()}</Text>
                     <Text numberOfLines={2} style={styles.latestTitle}>{item.title}</Text>
                     <Text style={styles.latestDate}>{item.dateLabel}</Text>
@@ -72,12 +91,17 @@ export default function NotesScreen() {
         </ScrollView>
 
         <View style={[styles.fabStack, { bottom: insets.bottom + 74 }]}>
-          <Pressable style={[styles.fab, styles.fabSecondary]} onPress={() => router.push('/modals/add-folder')}>
-            <Ionicons name="folder-open-outline" size={18} color={Colors.glassText} />
-          </Pressable>
-          <Pressable style={[styles.fab, styles.fabPrimary]} onPress={openCreateNote}>
-            <Ionicons name="add" size={24} color={Colors.noteAccentText} />
-          </Pressable>
+          <LiquidFab
+            size={44}
+            icon={<Ionicons name="folder-open-outline" size={18} color={Colors.glassText} />}
+            onPress={() => router.push('/modals/add-folder')}
+          />
+          <LiquidFab
+            tone="accent"
+            size={58}
+            icon={<Ionicons name="add" size={26} color={Colors.noteAccentStrong} />}
+            onPress={openCreateNote}
+          />
         </View>
       </View>
     </GradientBackground>
@@ -165,25 +189,5 @@ const styles = StyleSheet.create({
     right: Layout.spacing.md,
     gap: Layout.spacing.xs,
     alignItems: 'center',
-  },
-  fab: {
-    borderRadius: Layout.radius.pill,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...Layout.shadow.ios,
-    ...Layout.shadow.android,
-  },
-  fabSecondary: {
-    width: 42,
-    height: 42,
-    backgroundColor: Colors.surface.level2,
-    borderColor: Colors.border.strong,
-  },
-  fabPrimary: {
-    width: 56,
-    height: 56,
-    backgroundColor: Colors.noteAccent,
-    borderColor: Colors.noteAccentStrong,
   },
 });
