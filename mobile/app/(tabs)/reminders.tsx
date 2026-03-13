@@ -5,7 +5,6 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ProjectTabs } from '@/components/reminders/ProjectTabs';
 import { ReminderItem } from '@/components/reminders/ReminderItem';
 import { BottomActionBar } from '@/components/ui/BottomActionBar';
 import { EmptyStateCard } from '@/components/ui/EmptyStateCard';
@@ -14,95 +13,68 @@ import { GradientBackground } from '@/components/ui/GradientBackground';
 import { Colors } from '@/constants/Colors';
 import { Layout } from '@/constants/Layout';
 import { SectionHeader } from '@/components/ui/SectionHeader';
-import { useProjectStore } from '@/store/useProjectStore';
 import { useReminderStore } from '@/store/useReminderStore';
-import { toProject, toReminder } from '@/types/models';
+import { toReminder } from '@/types/models';
 
 export default function RemindersScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const projectRecords = useProjectStore((state) => state.projects);
   const reminderRecords = useReminderStore((state) => state.reminders);
   const toggleReminderCompletion = useReminderStore((state) => state.toggleReminderCompletion);
   const deleteReminder = useReminderStore((state) => state.deleteReminder);
 
-  const [selectedProjectId, setSelectedProjectId] = useState<string | undefined>();
   const [showCompleted, setShowCompleted] = useState(false);
 
-  const projects = useMemo(() => projectRecords.map(toProject), [projectRecords]);
   const reminders = useMemo(
     () => reminderRecords.map(toReminder).sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime()),
     [reminderRecords],
   );
 
-  const filtered = useMemo(() => {
-    if (!selectedProjectId) {
-      return reminders;
-    }
-
-    return reminders.filter((item) => item.projectId === selectedProjectId);
-  }, [reminders, selectedProjectId]);
-
-  const activeReminders = filtered.filter((item) => !item.isCompleted);
-  const completedReminders = filtered.filter((item) => item.isCompleted);
+  const activeReminders = reminders.filter((item) => !item.isCompleted);
+  const completedReminders = reminders.filter((item) => item.isCompleted);
   const nowStart = startOfDay(new Date());
   const todayReminders = activeReminders.filter((item) => isToday(item.dueDate));
   const upcomingReminders = activeReminders.filter((item) => isAfter(item.dueDate, nowStart) && !isToday(item.dueDate));
-
-  const resolveProject = (projectId?: string) => {
-    const project = projects.find((item) => item.id === projectId);
-    return project ? { name: project.name, color: project.color } : {};
-  };
 
   return (
     <GradientBackground>
       <View style={[styles.container, { paddingTop: insets.top + 12 }]}> 
         <Text style={styles.title}>Reminders</Text>
-        <Text style={styles.subtitle}>Projene göre filtrele, sonra bugün ve gelecek işlerini tamamla.</Text>
-
-        <ProjectTabs
-          projects={projects}
-          selectedProjectId={selectedProjectId}
-          onSelect={setSelectedProjectId}
-        />
+        <Text style={styles.subtitle}>Track today, upcoming, and completed reminders.</Text>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
           <View style={styles.section}>
             <SectionHeader title="Today" count={todayReminders.length} />
             {todayReminders.length === 0 ? (
               <EmptyStateCard
-                title="Bugün için reminder yok"
-                description="Öncelikli bir hatırlatıcı oluştur ve gününü netleştir."
-                ctaLabel="Reminder Ekle"
+                title="No reminders for today"
+                description="Create a reminder to keep your day focused."
+                ctaLabel="Add Reminder"
                 onCtaPress={() => router.push('/modals/add-reminder')}
                 iconName="alarm-outline"
               />
             ) : (
               todayReminders.map((reminder) => {
-                const project = resolveProject(reminder.projectId);
-
                 return (
                   <ReminderItem
                     key={reminder.id}
                     reminder={reminder}
-                    projectName={project.name}
-                    projectColor={project.color}
                     onComplete={toggleReminderCompletion}
                     onOpenMenu={(id) => {
-                      Alert.alert('Hatırlatıcı', 'Ne yapmak istersiniz?', [
+                      Alert.alert('Reminder', 'What do you want to do?', [
                         {
-                          text: 'Düzenle',
+                          text: 'Edit',
                           onPress: () => router.push(`/modals/add-reminder?id=${id}`),
                         },
                         {
-                          text: 'Sil',
+                          text: 'Delete',
                           style: 'destructive',
                           onPress: () => {
                             void deleteReminder(id);
                           },
                         },
-                        { text: 'İptal', style: 'cancel' },
+                        { text: 'Cancel', style: 'cancel' },
                       ]);
                     }}
                   />
@@ -115,37 +87,33 @@ export default function RemindersScreen() {
             <SectionHeader title="Upcoming" count={upcomingReminders.length} />
             {upcomingReminders.length === 0 ? (
               <EmptyStateCard
-                title="Planlanan reminder yok"
-                description="Bu hafta için birkaç hatırlatıcı ekleyip akışını güçlendir."
-                ctaLabel="Reminder Ekle"
+                title="No upcoming reminders"
+                description="Add a few reminders for this week."
+                ctaLabel="Add Reminder"
                 onCtaPress={() => router.push('/modals/add-reminder')}
                 iconName="calendar-outline"
               />
             ) : (
               upcomingReminders.map((reminder) => {
-                const project = resolveProject(reminder.projectId);
-
                 return (
                   <ReminderItem
                     key={reminder.id}
                     reminder={reminder}
-                    projectName={project.name}
-                    projectColor={project.color}
                     onComplete={toggleReminderCompletion}
                     onOpenMenu={(id) => {
-                      Alert.alert('Hatırlatıcı', 'Ne yapmak istersiniz?', [
+                      Alert.alert('Reminder', 'What do you want to do?', [
                         {
-                          text: 'Düzenle',
+                          text: 'Edit',
                           onPress: () => router.push(`/modals/add-reminder?id=${id}`),
                         },
                         {
-                          text: 'Sil',
+                          text: 'Delete',
                           style: 'destructive',
                           onPress: () => {
                             void deleteReminder(id);
                           },
                         },
-                        { text: 'İptal', style: 'cancel' },
+                        { text: 'Cancel', style: 'cancel' },
                       ]);
                     }}
                   />
@@ -163,25 +131,21 @@ export default function RemindersScreen() {
 
             {showCompleted
               ? completedReminders.map((reminder) => {
-                  const project = resolveProject(reminder.projectId);
-
                   return (
                     <ReminderItem
                       key={reminder.id}
                       reminder={reminder}
-                      projectName={project.name}
-                      projectColor={project.color}
                       onComplete={toggleReminderCompletion}
                       onOpenMenu={(id) => {
-                        Alert.alert('Hatırlatıcı', 'Ne yapmak istersiniz?', [
+                        Alert.alert('Reminder', 'What do you want to do?', [
                           {
-                            text: 'Sil',
+                            text: 'Delete',
                             style: 'destructive',
                             onPress: () => {
                               void deleteReminder(id);
                             },
                           },
-                          { text: 'Kapat', style: 'cancel' },
+                          { text: 'Close', style: 'cancel' },
                         ]);
                       }}
                     />
@@ -193,7 +157,7 @@ export default function RemindersScreen() {
 
         <BottomActionBar>
           <GlassButton
-            title="Yeni Reminder"
+            title="Add Reminder"
             onPress={() => router.push('/modals/add-reminder')}
             icon={<Ionicons name="add" size={20} color={Colors.glassText} />}
             variant="primary"

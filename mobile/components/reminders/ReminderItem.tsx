@@ -1,5 +1,4 @@
 import { format } from 'date-fns';
-import { tr } from 'date-fns/locale';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -12,23 +11,19 @@ import type { Reminder } from '@/types/models';
 
 interface ReminderItemProps {
   reminder: Reminder;
-  projectName?: string;
-  projectColor?: string;
   onComplete: (id: string) => void;
   onOpenMenu: (id: string) => void;
 }
 
 const repeatLabel: Record<Reminder['repeatType'], string> = {
-  none: 'Tekrar yok',
-  daily: 'Günlük',
-  weekly: 'Haftalık',
-  monthly: 'Aylık',
+  none: 'No repeat',
+  daily: 'Daily',
+  weekly: 'Weekly',
+  monthly: 'Monthly',
 };
 
 export const ReminderItem = ({
   reminder,
-  projectName,
-  projectColor,
   onComplete,
   onOpenMenu,
 }: ReminderItemProps) => {
@@ -37,25 +32,21 @@ export const ReminderItem = ({
       renderRightActions={() => (
         <View style={styles.swipeAction}>
           <Ionicons name="checkmark-done" color={Colors.glassText} size={20} />
-          <Text style={styles.swipeText}>Tamamla</Text>
+          <Text style={styles.swipeText}>Complete</Text>
         </View>
       )}
       onSwipeableOpen={() => onComplete(reminder.id)}
     >
       <Pressable onLongPress={() => onOpenMenu(reminder.id)} delayLongPress={260}>
         <GlassCard
-          style={[
-            styles.card,
-            projectColor ? { borderLeftColor: projectColor, borderLeftWidth: 4 } : null,
-          ]}
+          style={styles.card}
         >
           <View style={styles.row}>
             <View style={styles.content}>
               <Text style={[styles.title, reminder.isCompleted && styles.completedTitle]}>{reminder.title}</Text>
 
               <View style={styles.metaRow}>
-                {projectName ? <Text style={styles.metaText}>{projectName}</Text> : null}
-                <Text style={styles.metaText}>{format(reminder.dueDate, 'd MMM HH:mm', { locale: tr })}</Text>
+                <Text style={styles.metaText}>{format(reminder.dueDate, 'd MMM HH:mm')}</Text>
               </View>
 
               <GlassBadge label={repeatLabel[reminder.repeatType]} tone="neutral" />

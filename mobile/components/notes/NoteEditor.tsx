@@ -28,7 +28,7 @@ export const NoteEditor = ({ title, content, onTitleChange, onContentChange }: N
 
   return (
     <View style={styles.container}>
-      <GlassInput label="Başlık" value={title} onChangeText={onTitleChange} placeholder="Not başlığı" />
+      <GlassInput label="Title" value={title} onChangeText={onTitleChange} placeholder="Note title" />
 
       <View style={styles.editorWrap}>
         <RichEditor
@@ -37,7 +37,7 @@ export const NoteEditor = ({ title, content, onTitleChange, onContentChange }: N
           initialContentHTML={content}
           editorStyle={editorStyle}
           style={styles.editor}
-          placeholder="Not içeriğini yaz..."
+          placeholder="Write your note..."
           onChange={onContentChange}
         />
       </View>

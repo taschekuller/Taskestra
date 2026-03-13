@@ -1,5 +1,4 @@
 import { format } from 'date-fns';
-import { tr } from 'date-fns/locale';
 import { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,8 +12,6 @@ import type { Task } from '@/types/models';
 
 interface TaskItemProps {
   task: Task;
-  projectName?: string;
-  projectColor?: string;
   isOverdue?: boolean;
   onToggle: (id: string) => void;
   onDelete?: (id: string) => void;
@@ -22,8 +19,6 @@ interface TaskItemProps {
 
 export const TaskItem = ({
   task,
-  projectName,
-  projectColor,
   isOverdue,
   onToggle,
   onDelete,
@@ -43,7 +38,6 @@ export const TaskItem = ({
       style={[
         styles.card,
         isOverdue && !task.isCompleted && styles.overdueCard,
-        projectColor ? { borderLeftWidth: 4, borderLeftColor: projectColor } : null,
       ]}
     >
       <View style={styles.row}>
@@ -59,8 +53,7 @@ export const TaskItem = ({
           <Text style={[styles.title, task.isCompleted && styles.completedTitle]}>{task.title}</Text>
 
           <View style={styles.metaRow}>
-            {projectName ? <Text style={styles.metaText}>{projectName}</Text> : null}
-            <Text style={styles.metaText}>{format(task.dueDate, 'd MMM HH:mm', { locale: tr })}</Text>
+            <Text style={styles.metaText}>{format(task.dueDate, 'd MMM HH:mm')}</Text>
           </View>
 
           {isOverdue && !task.isCompleted ? <GlassBadge label="Overdue" tone="danger" /> : null}

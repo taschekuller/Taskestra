@@ -9,7 +9,6 @@ const buildTask = (partial: Partial<TaskRecord> & Pick<TaskRecord, 'id' | 'title
   priority: partial.priority ?? 'medium',
   createdAtIso: partial.createdAtIso ?? '2026-03-01T08:00:00.000Z',
   description: partial.description,
-  projectId: partial.projectId,
 });
 
 describe('task selectors', () => {

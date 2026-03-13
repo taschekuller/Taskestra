@@ -87,7 +87,7 @@ export const scheduleReminder = async (reminder: Reminder) => {
   const identifier = await Notifications.scheduleNotificationAsync({
     content: {
       title: reminder.title,
-      body: reminder.notes || 'Hatırlatıcı zamanı geldi.',
+      body: reminder.notes || 'Your reminder is due.',
       sound: true,
     },
     trigger: getReminderTrigger(reminder),

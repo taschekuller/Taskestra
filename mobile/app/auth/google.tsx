@@ -13,13 +13,13 @@ export default function GoogleAuthScreen() {
     <GradientBackground>
       <View style={styles.container}>
         <GlassCard>
-          <Text style={styles.title}>Google OAuth (v2 hazırlık)</Text>
-          <Text style={styles.text}>Strateji: {authStrategy}</Text>
+          <Text style={styles.title}>Google OAuth (v2 prep)</Text>
+          <Text style={styles.text}>Strategy: {authStrategy}</Text>
           <Text style={styles.text}>Redirect URI: {redirectUri}</Text>
-          <Text style={styles.text}>Durum: {isConnected ? 'Bağlı' : 'Bağlı değil'}</Text>
+          <Text style={styles.text}>Status: {isConnected ? 'Connected' : 'Not connected'}</Text>
 
           <GlassButton
-            title={isConnected ? 'Çıkış Yap' : 'Google ile Bağla'}
+            title={isConnected ? 'Sign Out' : 'Connect with Google'}
             onPress={() => {
               if (isConnected) {
                 void signOut();

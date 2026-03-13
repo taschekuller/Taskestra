@@ -13,8 +13,8 @@ export default function EventDetailModal() {
       <View style={styles.container}>
         <GlassCard>
           <Text style={styles.title}>{params.title || 'Event'}</Text>
-          <Text style={styles.text}>Başlangıç: {params.start || '-'}</Text>
-          <Text style={styles.text}>Bitiş: {params.end || '-'}</Text>
+          <Text style={styles.text}>Start: {params.start || '-'}</Text>
+          <Text style={styles.text}>End: {params.end || '-'}</Text>
         </GlassCard>
       </View>
     </GradientBackground>

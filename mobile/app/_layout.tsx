@@ -30,23 +30,23 @@ export default function RootLayout() {
 
           <Stack.Screen
             name="modals/add-task"
-            options={{ title: 'Yeni Görev', presentation: 'modal' }}
+            options={{ title: 'New Task', presentation: 'modal' }}
           />
           <Stack.Screen
             name="modals/add-reminder"
-            options={{ title: 'Yeni Hatırlatıcı', presentation: 'modal' }}
+            options={{ title: 'New Reminder', presentation: 'modal' }}
           />
           <Stack.Screen
             name="modals/add-note"
-            options={{ title: 'Not Düzenle', presentation: 'modal' }}
+            options={{ title: 'Edit Note', presentation: 'modal' }}
           />
           <Stack.Screen
             name="modals/add-folder"
-            options={{ title: 'Klasör', presentation: 'modal' }}
+            options={{ title: 'Folder', presentation: 'modal' }}
           />
           <Stack.Screen
             name="modals/event-detail"
-            options={{ title: 'Event Detayı', presentation: 'modal' }}
+            options={{ title: 'Event Details', presentation: 'modal' }}
           />
           <Stack.Screen
             name="auth/google"

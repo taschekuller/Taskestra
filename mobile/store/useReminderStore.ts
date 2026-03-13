@@ -11,7 +11,6 @@ import { createId } from '@/utils/id';
 export interface AddReminderInput {
   title: string;
   notes?: string;
-  projectId?: string;
   dueDate: Date;
   repeatType?: RepeatType;
 }
@@ -19,7 +18,6 @@ export interface AddReminderInput {
 export interface UpdateReminderInput {
   title?: string;
   notes?: string;
-  projectId?: string;
   dueDate?: Date;
   repeatType?: RepeatType;
   isCompleted?: boolean;
@@ -32,7 +30,6 @@ interface ReminderStore {
   updateReminder: (id: string, updates: UpdateReminderInput) => Promise<void>;
   deleteReminder: (id: string) => Promise<void>;
   getReminders: () => Reminder[];
-  getRemindersByProject: (projectId?: string) => Reminder[];
   syncScheduledNotifications: () => Promise<void>;
 }
 
@@ -40,7 +37,6 @@ const toRecord = (input: AddReminderInput, id: string): ReminderRecord => ({
   id,
   title: input.title.trim(),
   notes: input.notes,
-  projectId: input.projectId,
   dueDateIso: input.dueDate.toISOString(),
   repeatType: input.repeatType ?? 'none',
   isCompleted: false,
@@ -105,7 +101,6 @@ export const useReminderStore = create<ReminderStore>()(
           ...found,
           title: updates.title ?? found.title,
           notes: updates.notes ?? found.notes,
-          projectId: updates.projectId ?? found.projectId,
           dueDateIso: updates.dueDate ? updates.dueDate.toISOString() : found.dueDateIso,
           repeatType: updates.repeatType ?? found.repeatType,
           isCompleted: updates.isCompleted ?? found.isCompleted,
@@ -134,14 +129,6 @@ export const useReminderStore = create<ReminderStore>()(
         });
       },
       getReminders: () => get().reminders.map(toReminder),
-      getRemindersByProject: (projectId) => {
-        const reminders = get().reminders.map(toReminder);
-        if (!projectId) {
-          return reminders;
-        }
-
-        return reminders.filter((reminder) => reminder.projectId === projectId);
-      },
       syncScheduledNotifications: async () => {
         const activeNotificationIds = get().reminders
           .filter((reminder) => !reminder.isCompleted)

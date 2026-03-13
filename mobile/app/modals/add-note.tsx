@@ -8,8 +8,7 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { GradientBackground } from '@/components/ui/GradientBackground';
 import { Colors } from '@/constants/Colors';
 import { useNoteStore } from '@/store/useNoteStore';
-import { useProjectStore } from '@/store/useProjectStore';
-import { toNote, toProject } from '@/types/models';
+import { toNote } from '@/types/models';
 
 export default function AddNoteModal() {
   const router = useRouter();
@@ -19,8 +18,6 @@ export default function AddNoteModal() {
   const folders = useNoteStore((state) => state.folders);
   const addNote = useNoteStore((state) => state.addNote);
   const updateNote = useNoteStore((state) => state.updateNote);
-
-  const projects = useProjectStore((state) => state.projects).map(toProject);
 
   const existingNote = useMemo(() => {
     if (!params.noteId) {
@@ -35,7 +32,6 @@ export default function AddNoteModal() {
   const [title, setTitle] = useState(existingNote?.title ?? '');
   const [content, setContent] = useState(existingNote?.content ?? '');
   const [folderId, setFolderId] = useState(existingNote?.folderId ?? params.folderId);
-  const [projectId, setProjectId] = useState(existingNote?.projectId);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(existingNote?.updatedAt ?? null);
 
   useEffect(() => {
@@ -47,7 +43,6 @@ export default function AddNoteModal() {
     setTitle(existingNote.title);
     setContent(existingNote.content);
     setFolderId(existingNote.folderId);
-    setProjectId(existingNote.projectId);
     setLastSavedAt(existingNote.updatedAt);
   }, [existingNote]);
 
@@ -59,18 +54,18 @@ export default function AddNoteModal() {
 
     const timeout = setTimeout(() => {
       if (noteId) {
-        updateNote(noteId, { title, content, folderId, projectId });
+        updateNote(noteId, { title, content, folderId });
         setLastSavedAt(new Date());
         return;
       }
 
-      const createdId = addNote({ title, content, folderId, projectId });
+      const createdId = addNote({ title, content, folderId });
       setNoteId(createdId);
       setLastSavedAt(new Date());
     }, 500);
 
     return () => clearTimeout(timeout);
-  }, [addNote, content, folderId, noteId, projectId, title, updateNote]);
+  }, [addNote, content, folderId, noteId, title, updateNote]);
 
   return (
     <GradientBackground>
@@ -78,10 +73,10 @@ export default function AddNoteModal() {
         <NoteEditor title={title} content={content} onTitleChange={setTitle} onContentChange={setContent} />
 
         <GlassCard>
-          <Text style={styles.sectionTitle}>Klasör</Text>
+          <Text style={styles.sectionTitle}>Folder</Text>
           <View style={styles.chipWrap}>
             <GlassButton
-              title="Yok"
+              title="Others"
               onPress={() => setFolderId(undefined)}
               style={[styles.chip, !folderId && styles.selected]}
             />
@@ -96,28 +91,9 @@ export default function AddNoteModal() {
           </View>
         </GlassCard>
 
-        <GlassCard>
-          <Text style={styles.sectionTitle}>Proje</Text>
-          <View style={styles.chipWrap}>
-            <GlassButton
-              title="Yok"
-              onPress={() => setProjectId(undefined)}
-              style={[styles.chip, !projectId && styles.selected]}
-            />
-            {projects.map((project) => (
-              <GlassButton
-                key={project.id}
-                title={project.name}
-                onPress={() => setProjectId(project.id)}
-                style={[styles.chip, projectId === project.id && styles.selected, { borderColor: project.color }]}
-              />
-            ))}
-          </View>
-        </GlassCard>
+        {lastSavedAt ? <Text style={styles.savedText}>Auto-saved: {lastSavedAt.toLocaleTimeString('en-US')}</Text> : null}
 
-        {lastSavedAt ? <Text style={styles.savedText}>Otomatik kaydedildi: {lastSavedAt.toLocaleTimeString('tr-TR')}</Text> : null}
-
-        <GlassButton title="Kapat" onPress={() => router.back()} />
+        <GlassButton title="Close" onPress={() => router.back()} />
       </ScrollView>
     </GradientBackground>
   );

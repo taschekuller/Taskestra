@@ -1,5 +1,4 @@
 import { format } from 'date-fns';
-import { tr } from 'date-fns/locale';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { TaskItem } from '@/components/overview/TaskItem';
@@ -16,7 +15,6 @@ export interface WeeklyGroup {
 
 interface WeeklySectionProps {
   groups: WeeklyGroup[];
-  resolveProject: (projectId?: string) => { name?: string; color?: string };
   onToggleTask: (id: string) => void;
   onDeleteTask: (id: string) => void;
   now?: Date;
@@ -25,7 +23,6 @@ interface WeeklySectionProps {
 
 export const WeeklySection = ({
   groups,
-  resolveProject,
   onToggleTask,
   onDeleteTask,
   now = new Date(),
@@ -35,31 +32,28 @@ export const WeeklySection = ({
 
   return (
     <View style={styles.container}>
-      <SectionHeader title="Bu Hafta" count={totalCount} />
+      <SectionHeader title="This Week" count={totalCount} />
 
       {groups.length === 0 ? (
         <EmptyStateCard
-          title="Bu hafta planın boş"
-          description="Bu haftaya görev ekleyerek net bir odak listesi oluştur."
-          ctaLabel="Görev Ekle"
+          title="No tasks planned this week"
+          description="Add tasks to build a clear weekly focus list."
+          ctaLabel="Add Task"
           onCtaPress={onCreateTask}
           iconName="calendar-outline"
         />
       ) : (
         groups.map((group) => (
           <View key={group.date.toISOString()} style={styles.group}>
-            <Text style={styles.groupTitle}>{format(group.date, 'EEEE, d MMMM', { locale: tr })}</Text>
+            <Text style={styles.groupTitle}>{format(group.date, 'EEEE, d MMMM')}</Text>
 
             {group.tasks.map((task) => {
-              const project = resolveProject(task.projectId);
               const isOverdue = !task.isCompleted && task.dueDate.getTime() < now.getTime();
 
               return (
                 <TaskItem
                   key={task.id}
                   task={task}
-                  projectName={project.name}
-                  projectColor={project.color}
                   isOverdue={isOverdue}
                   onToggle={onToggleTask}
                   onDelete={onDeleteTask}

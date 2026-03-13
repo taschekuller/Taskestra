@@ -27,7 +27,3 @@ export const fetchEventsByRange = async (
 ): Promise<CalendarEvent[]> => {
   return [];
 };
-
-export const linkCalendarToProject = async (_calendarId: string, _projectId: string) => {
-  return true;
-};

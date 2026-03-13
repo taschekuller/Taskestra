@@ -20,7 +20,7 @@ describe('useOverdueTasks', () => {
           {
             id: '2',
             title: 'Future',
-            dueDateIso: '2026-03-12T08:00:00.000Z',
+            dueDateIso: '2026-12-12T08:00:00.000Z',
             isCompleted: false,
             priority: 'medium',
             createdAtIso: '2026-03-01T08:00:00.000Z',

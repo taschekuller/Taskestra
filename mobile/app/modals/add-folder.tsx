@@ -44,7 +44,7 @@ export default function AddFolderModal() {
 
   const onSave = () => {
     if (!name.trim()) {
-      Alert.alert('Eksik Alan', 'Klasör adı zorunludur.');
+      Alert.alert('Missing Field', 'Folder name is required.');
       return;
     }
 
@@ -60,10 +60,10 @@ export default function AddFolderModal() {
   return (
     <GradientBackground>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.container}>
-        <GlassInput label="Klasör Adı" value={name} onChangeText={setName} placeholder="Örn: Work" />
+        <GlassInput label="Folder Name" value={name} onChangeText={setName} placeholder="e.g. Work" />
 
         <GlassCard>
-          <Text style={styles.sectionTitle}>Emoji Seç</Text>
+          <Text style={styles.sectionTitle}>Choose Emoji</Text>
           <View style={styles.emojiGrid}>
             {EMOJI_OPTIONS.map((item) => {
               const selected = item === emoji;
@@ -81,7 +81,7 @@ export default function AddFolderModal() {
           </View>
         </GlassCard>
 
-        <GlassButton title={existingFolder ? 'Güncelle' : 'Kaydet'} onPress={onSave} variant="primary" />
+        <GlassButton title={existingFolder ? 'Update' : 'Save'} onPress={onSave} variant="primary" />
       </ScrollView>
     </GradientBackground>
   );

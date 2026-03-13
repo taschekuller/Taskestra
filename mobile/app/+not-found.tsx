@@ -9,9 +9,9 @@ export default function NotFoundScreen() {
   return (
     <GradientBackground>
       <View style={styles.container}>
-        <Text style={styles.title}>Sayfa bulunamadı</Text>
+        <Text style={styles.title}>Page not found</Text>
         <Link href="/(tabs)" asChild>
-          <GlassButton title="Ana Sayfaya Dön" onPress={() => {}} />
+          <GlassButton title="Go to Home" onPress={() => {}} />
         </Link>
       </View>
     </GradientBackground>

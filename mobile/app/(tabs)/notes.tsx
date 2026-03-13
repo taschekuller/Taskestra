@@ -30,7 +30,7 @@ export default function NotesScreen() {
   return (
     <GradientBackground>
       <View style={[styles.container, { paddingTop: insets.top + 10 }]}>
-        <Text style={styles.title}>Notlar</Text>
+        <Text style={styles.title}>Notes</Text>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
           <ScrollView
@@ -56,7 +56,7 @@ export default function NotesScreen() {
           </ScrollView>
 
           <View style={styles.latestSection}>
-            <SectionHeader title="Son Notlar" count={latestNotes.length} />
+            <SectionHeader title="Latest Notes" count={latestNotes.length} />
             <View style={styles.latestGrid}>
               {latestNotes.map((item) => (
                 <Pressable key={item.id} style={styles.latestGridItem} onPress={openCreateNote}>

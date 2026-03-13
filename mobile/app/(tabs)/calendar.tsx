@@ -1,5 +1,4 @@
 import { eachDayOfInterval, endOfWeek, format, isSameDay, startOfWeek } from 'date-fns';
-import { tr } from 'date-fns/locale';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -54,13 +53,13 @@ export default function CalendarScreen() {
     <GradientBackground>
       <View style={[styles.container, { paddingTop: insets.top + 12 }]}> 
         <Text style={styles.title}>Calendar</Text>
-        <Text style={styles.subtitle}>Gününü seç, event akışını saat bazında yönet.</Text>
+        <Text style={styles.subtitle}>Pick a day and manage your event timeline.</Text>
 
         <GlassCard style={styles.toggleCard}>
           <SegmentedControl
             options={[
-              { label: 'Haftalık', value: 'week' },
-              { label: 'Aylık', value: 'month' },
+              { label: 'Weekly', value: 'week' },
+              { label: 'Monthly', value: 'month' },
             ]}
             selected={selectedMode}
             onChange={(value) => {
@@ -69,7 +68,7 @@ export default function CalendarScreen() {
               }
             }}
           />
-          <Text style={styles.monthTitle}>{format(referenceDate, 'MMMM yyyy', { locale: tr })}</Text>
+          <Text style={styles.monthTitle}>{format(referenceDate, 'MMMM yyyy')}</Text>
         </GlassCard>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.daysRow}>
@@ -83,7 +82,7 @@ export default function CalendarScreen() {
                 onPress={() => setSelectedDate(day)}
               >
                 <Text style={[styles.dayPillLabel, active && styles.dayPillLabelActive]}>
-                  {format(day, 'EE', { locale: tr })}
+                  {format(day, 'EE')}
                 </Text>
                 <Text style={[styles.dayPillDate, active && styles.dayPillLabelActive]}>
                   {format(day, 'd')}
@@ -98,11 +97,11 @@ export default function CalendarScreen() {
         <GlassCard style={styles.integrationCard}>
           <Text style={styles.integrationTitle}>Google Calendar</Text>
           <Text style={styles.integrationText}>
-            Takvimleri bağlayıp eventleri proje renkleriyle görüntüleyebilirsin.
+            Connect your calendars and view events in one place.
           </Text>
 
           <GlassButton
-            title={isConnected ? 'Bağlantıyı Kaldır' : 'Google ile Bağla'}
+            title={isConnected ? 'Disconnect' : 'Connect with Google'}
             onPress={() => {
               if (isConnected) {
                 void signOut();
@@ -121,17 +120,17 @@ export default function CalendarScreen() {
           contentContainerStyle={[styles.eventsContainer, { paddingBottom: 140 }]}
         >
           <SectionHeader
-            title={format(selectedDate, 'd MMMM, EEEE', { locale: tr })}
+            title={format(selectedDate, 'd MMMM, EEEE')}
             count={selectedDayEvents.length}
           />
 
-          {eventsLoading ? <Text style={styles.mutedText}>Eventler yükleniyor...</Text> : null}
+          {eventsLoading ? <Text style={styles.mutedText}>Loading events...</Text> : null}
 
           {!eventsLoading && selectedDayEvents.length === 0 ? (
             <EmptyStateCard
-              title="Bu gün için event yok"
-              description="Takviminde yeni etkinlik görünmüyor. Farklı bir gün seçebilir veya Google hesabını bağlayabilirsin."
-              ctaLabel={!isConnected ? 'Google ile Bağlan' : undefined}
+              title="No events for this day"
+              description="Try another date or connect your Google account."
+              ctaLabel={!isConnected ? 'Connect with Google' : undefined}
               onCtaPress={!isConnected ? () => { void signIn(); } : undefined}
               iconName="calendar-clear-outline"
             />

@@ -1,6 +1,5 @@
 import { useRouter } from 'expo-router';
 import { endOfWeek, eachDayOfInterval, format, isSameDay, isToday, startOfWeek } from 'date-fns';
-import { tr } from 'date-fns/locale';
 import { useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
@@ -15,9 +14,7 @@ import { GradientBackground } from '@/components/ui/GradientBackground';
 import { Colors } from '@/constants/Colors';
 import { Layout } from '@/constants/Layout';
 import { useOverdueTasks } from '@/hooks/useOverdueTasks';
-import { useProjectStore } from '@/store/useProjectStore';
 import { getTasksByDateRangeFromRecords, useTaskStore } from '@/store/useTaskStore';
-import { toProject } from '@/types/models';
 
 export default function OverviewScreen() {
   const router = useRouter();
@@ -25,14 +22,12 @@ export default function OverviewScreen() {
 
   const overdueTasks = useOverdueTasks();
 
-  const projectRecords = useProjectStore((state) => state.projects);
   const taskRecords = useTaskStore((state) => state.tasks);
   const toggleTask = useTaskStore((state) => state.toggleTask);
   const deleteTask = useTaskStore((state) => state.deleteTask);
 
   const [refreshing, setRefreshing] = useState(false);
 
-  const projects = useMemo(() => projectRecords.map(toProject), [projectRecords]);
   const allTasks = useMemo(() => taskRecords.map((task) => ({ ...task, dueDate: new Date(task.dueDateIso) })), [taskRecords]);
   const todayCount = useMemo(
     () => allTasks.filter((task) => !task.isCompleted && isToday(task.dueDate)).length,
@@ -58,19 +53,6 @@ export default function OverviewScreen() {
     [weeklyGroups],
   );
 
-  const resolveProject = (projectId?: string) => {
-    const project = projects.find((item) => item.id === projectId);
-
-    if (!project) {
-      return {};
-    }
-
-    return {
-      name: project.name,
-      color: project.color,
-    };
-  };
-
   return (
     <GradientBackground>
       <Animated.View entering={FadeIn.duration(300)} style={styles.flex}>
@@ -90,7 +72,7 @@ export default function OverviewScreen() {
         >
           <GlassCard>
             <Text style={styles.greeting}>Today Focus</Text>
-            <Text style={styles.dateText}>{format(new Date(), 'd MMMM yyyy, EEEE', { locale: tr })}</Text>
+            <Text style={styles.dateText}>{format(new Date(), 'd MMMM yyyy, EEEE')}</Text>
 
             <View style={styles.statsRow}>
               <View style={styles.statItem}>
@@ -110,7 +92,6 @@ export default function OverviewScreen() {
 
           <OverdueSection
             tasks={overdueTasks}
-            resolveProject={resolveProject}
             onToggleTask={toggleTask}
             onDeleteTask={deleteTask}
             onCreateTask={() => router.push('/modals/add-task')}
@@ -118,7 +99,6 @@ export default function OverviewScreen() {
 
           <WeeklySection
             groups={weeklyGroups}
-            resolveProject={resolveProject}
             onToggleTask={toggleTask}
             onDeleteTask={deleteTask}
             onCreateTask={() => router.push('/modals/add-task')}
@@ -127,7 +107,7 @@ export default function OverviewScreen() {
 
         <View style={[styles.fab, { bottom: insets.bottom + 90 }]}> 
           <GlassButton
-            title="Yeni Task"
+            title="Add Task"
             onPress={() => router.push('/modals/add-task')}
             icon={<Ionicons name="add" size={20} color={Colors.glassText} />}
             variant="primary"

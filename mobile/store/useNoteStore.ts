@@ -23,14 +23,12 @@ export interface AddNoteInput {
   title: string;
   content: string;
   folderId?: string;
-  projectId?: string;
 }
 
 export interface UpdateNoteInput {
   title?: string;
   content?: string;
   folderId?: string;
-  projectId?: string;
 }
 
 interface NoteStore {
@@ -73,7 +71,6 @@ const toNoteRecord = (input: AddNoteInput, id: string): NoteRecord => {
     title: input.title,
     content: input.content,
     folderId: input.folderId,
-    projectId: input.projectId,
     createdAtIso: now,
     updatedAtIso: now,
   };
@@ -156,10 +153,6 @@ export const useNoteStore = create<NoteStore>()(
 
           if (updates.folderId !== undefined) {
             target.folderId = updates.folderId;
-          }
-
-          if (updates.projectId !== undefined) {
-            target.projectId = updates.projectId;
           }
 
           target.updatedAtIso = new Date().toISOString();

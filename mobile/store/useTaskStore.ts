@@ -11,7 +11,6 @@ import { createId } from '@/utils/id';
 export interface AddTaskInput {
   title: string;
   description?: string;
-  projectId?: string;
   dueDate: Date;
   priority?: Priority;
 }
@@ -19,7 +18,6 @@ export interface AddTaskInput {
 export interface UpdateTaskInput {
   title?: string;
   description?: string;
-  projectId?: string;
   dueDate?: Date;
   isCompleted?: boolean;
   priority?: Priority;
@@ -66,7 +64,6 @@ const toRecord = (task: AddTaskInput, id: string): TaskRecord => ({
   id,
   title: task.title.trim(),
   description: task.description,
-  projectId: task.projectId,
   dueDateIso: task.dueDate.toISOString(),
   isCompleted: false,
   priority: task.priority ?? 'medium',
@@ -109,10 +106,6 @@ export const useTaskStore = create<TaskStore>()(
 
           if (updates.description !== undefined) {
             target.description = updates.description;
-          }
-
-          if (updates.projectId !== undefined) {
-            target.projectId = updates.projectId;
           }
 
           if (updates.dueDate !== undefined) {

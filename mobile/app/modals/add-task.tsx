@@ -12,9 +12,8 @@ import { GradientBackground } from '@/components/ui/GradientBackground';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { Colors } from '@/constants/Colors';
 import { Layout } from '@/constants/Layout';
-import { useProjectStore } from '@/store/useProjectStore';
 import { useTaskStore } from '@/store/useTaskStore';
-import { toProject, toTask, type Priority } from '@/types/models';
+import { toTask, type Priority } from '@/types/models';
 
 const priorities: Priority[] = ['low', 'medium', 'high'];
 
@@ -25,9 +24,6 @@ export default function AddTaskModal() {
   const taskRecords = useTaskStore((state) => state.tasks);
   const addTask = useTaskStore((state) => state.addTask);
   const updateTask = useTaskStore((state) => state.updateTask);
-
-  const projectRecords = useProjectStore((state) => state.projects);
-  const projects = useMemo(() => projectRecords.map(toProject), [projectRecords]);
 
   const existingTask = useMemo(() => {
     if (!params.id) {
@@ -41,7 +37,6 @@ export default function AddTaskModal() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [dueDateInput, setDueDateInput] = useState(format(new Date(), 'yyyy-MM-dd HH:mm'));
-  const [projectId, setProjectId] = useState<string | undefined>();
   const [priority, setPriority] = useState<Priority>('medium');
 
   useEffect(() => {
@@ -52,19 +47,18 @@ export default function AddTaskModal() {
     setTitle(existingTask.title);
     setDescription(existingTask.description || '');
     setDueDateInput(format(existingTask.dueDate, 'yyyy-MM-dd HH:mm'));
-    setProjectId(existingTask.projectId);
     setPriority(existingTask.priority);
   }, [existingTask]);
 
   const onSave = () => {
     if (!title.trim()) {
-      Alert.alert('Eksik Alan', 'Görev başlığı zorunludur.');
+      Alert.alert('Missing Field', 'Task title is required.');
       return;
     }
 
     const parsedDate = parse(dueDateInput, 'yyyy-MM-dd HH:mm', new Date());
     if (!isValid(parsedDate)) {
-      Alert.alert('Tarih Hatası', 'Tarih formatı: YYYY-MM-DD HH:mm');
+      Alert.alert('Date Error', 'Date format: YYYY-MM-DD HH:mm');
       return;
     }
 
@@ -72,7 +66,6 @@ export default function AddTaskModal() {
       updateTask(existingTask.id, {
         title,
         description,
-        projectId,
         dueDate: parsedDate,
         priority,
       });
@@ -80,7 +73,6 @@ export default function AddTaskModal() {
       addTask({
         title,
         description,
-        projectId,
         dueDate: parsedDate,
         priority,
       });
@@ -96,18 +88,18 @@ export default function AddTaskModal() {
           <SectionHeader title="Task Details" />
           <GlassCard>
             <GlassInput
-              label="Başlık"
+              label="Title"
               value={title}
               onChangeText={setTitle}
-              placeholder="Görev başlığı"
+              placeholder="Task title"
               containerStyle={styles.field}
             />
 
             <GlassInput
-              label="Açıklama"
+              label="Description"
               value={description}
               onChangeText={setDescription}
-              placeholder="Opsiyonel detay"
+              placeholder="Optional details"
               multiline
               numberOfLines={4}
               style={styles.multiline}
@@ -117,12 +109,12 @@ export default function AddTaskModal() {
           <SectionHeader title="Schedule" />
           <GlassCard>
             <GlassInput
-              label="Bitiş Tarihi (YYYY-MM-DD HH:mm)"
+              label="Due Date (YYYY-MM-DD HH:mm)"
               value={dueDateInput}
               onChangeText={setDueDateInput}
               keyboardType="numbers-and-punctuation"
             />
-            <Text style={styles.helper}>Örn: 2026-03-12 09:30</Text>
+            <Text style={styles.helper}>Example: 2026-03-12 09:30</Text>
           </GlassCard>
 
           <SectionHeader title="Priority" />
@@ -139,32 +131,12 @@ export default function AddTaskModal() {
             </View>
           </GlassCard>
 
-          <SectionHeader title="Project" />
-          <GlassCard>
-            <View style={styles.chipWrap}>
-              <Chip
-                label="Yok"
-                selected={!projectId}
-                onPress={() => setProjectId(undefined)}
-              />
-
-              {projects.map((project) => (
-                <Chip
-                  key={project.id}
-                  label={project.name}
-                  selected={projectId === project.id}
-                  onPress={() => setProjectId(project.id)}
-                  accentColor={project.color}
-                />
-              ))}
-            </View>
-          </GlassCard>
         </ScrollView>
 
         <BottomActionBar>
           <View style={styles.actionRow}>
-            <GlassButton title="İptal" onPress={() => router.back()} variant="secondary" style={styles.actionBtn} />
-            <GlassButton title={existingTask ? 'Güncelle' : 'Kaydet'} onPress={onSave} variant="primary" style={styles.actionBtn} />
+            <GlassButton title="Cancel" onPress={() => router.back()} variant="secondary" style={styles.actionBtn} />
+            <GlassButton title={existingTask ? 'Update' : 'Save'} onPress={onSave} variant="primary" style={styles.actionBtn} />
           </View>
         </BottomActionBar>
       </View>

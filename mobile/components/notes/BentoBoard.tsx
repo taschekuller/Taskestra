@@ -27,7 +27,7 @@ export const BentoBoard = ({
             <Text style={styles.heroEyebrow}>Quick Note</Text>
             <Text style={styles.heroTitle}>Capture ideas instantly</Text>
             <View style={styles.heroFooter}>
-              <Text style={styles.heroMeta}>{noteCount} not hazır</Text>
+              <Text style={styles.heroMeta}>{noteCount} notes ready</Text>
               <View style={styles.heroIconBubble}>
                 <Ionicons name="add" size={18} color={Colors.noteAccentText} />
               </View>
@@ -54,7 +54,7 @@ export const BentoBoard = ({
         <GlassCard style={styles.bottomCard}>
           <Text style={styles.bottomLabel}>Latest</Text>
           <Text numberOfLines={2} style={styles.bottomTitle}>
-            {latestNoteTitle || 'Henüz başlık yok, ilk notunu ekle.'}
+            {latestNoteTitle || 'No title yet, add your first note.'}
           </Text>
         </GlassCard>
 

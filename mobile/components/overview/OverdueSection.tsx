@@ -8,7 +8,6 @@ import type { Task } from '@/types/models';
 
 interface OverdueSectionProps {
   tasks: Task[];
-  resolveProject: (projectId?: string) => { name?: string; color?: string };
   onToggleTask: (id: string) => void;
   onDeleteTask: (id: string) => void;
   onCreateTask?: () => void;
@@ -16,7 +15,6 @@ interface OverdueSectionProps {
 
 export const OverdueSection = ({
   tasks,
-  resolveProject,
   onToggleTask,
   onDeleteTask,
   onCreateTask,
@@ -27,28 +25,22 @@ export const OverdueSection = ({
 
       {tasks.length === 0 ? (
         <EmptyStateCard
-          title="Overdue görev bulunmuyor"
-          description="Harika gidiyorsun. Yeni görev ekleyerek planını güncel tut."
-          ctaLabel="Yeni Task"
+          title="No overdue tasks"
+          description="Great progress. Add a new task to keep momentum."
+          ctaLabel="Add Task"
           onCtaPress={onCreateTask}
           iconName="checkmark-done-outline"
         />
       ) : (
-        tasks.map((task) => {
-          const project = resolveProject(task.projectId);
-
-          return (
-            <TaskItem
-              key={task.id}
-              task={task}
-              projectName={project.name}
-              projectColor={project.color}
-              isOverdue
-              onToggle={onToggleTask}
-              onDelete={onDeleteTask}
-            />
-          );
-        })
+        tasks.map((task) => (
+          <TaskItem
+            key={task.id}
+            task={task}
+            isOverdue
+            onToggle={onToggleTask}
+            onDelete={onDeleteTask}
+          />
+        ))
       )}
     </View>
   );
