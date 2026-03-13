@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 
+import { CATEGORY_CONFIGS } from '@/constants/Categories';
 import { storage } from '@/services/storage';
 import type { Note, NoteFolder, NoteFolderRecord, NoteRecord } from '@/types/models';
 import { toFolder, toNote } from '@/types/models';
@@ -55,6 +56,27 @@ const FOLDER_BROWN_TONES = [
   '#D0A987',
 ];
 
+const normalizeFolderName = (value: string) => value.trim().toLowerCase();
+const DEFAULT_FOLDER_NAME_SET = new Set(CATEGORY_CONFIGS.map((category) => normalizeFolderName(category.label)));
+
+const buildDefaultFolderRecords = (): NoteFolderRecord[] => {
+  return CATEGORY_CONFIGS.map((category, index) => ({
+    id: `default-folder-${category.key}`,
+    name: category.label,
+    color: category.folderColor,
+    emoji: category.folderEmoji,
+    createdAtIso: new Date(2000, 0, index + 1).toISOString(),
+  }));
+};
+
+const ensureDefaultFolders = (folders: NoteFolderRecord[]): NoteFolderRecord[] => {
+  const existingNameSet = new Set(folders.map((folder) => normalizeFolderName(folder.name)));
+  const defaultsToAdd = buildDefaultFolderRecords()
+    .filter((folder) => !existingNameSet.has(normalizeFolderName(folder.name)));
+
+  return [...folders, ...defaultsToAdd];
+};
+
 const toFolderRecord = (input: AddFolderInput, index: number): NoteFolderRecord => ({
   id: createId(),
   name: input.name.trim(),
@@ -88,13 +110,20 @@ export const getFoldersWithCount = (folders: NoteFolderRecord[], notes: NoteReco
 export const useNoteStore = create<NoteStore>()(
   persist(
     immer((set, get) => ({
-      folders: [],
+      folders: ensureDefaultFolders([]),
       notes: [],
       addFolder: (folder) => {
+        const normalizedName = normalizeFolderName(folder.name);
+        const existing = get().folders.find((item) => normalizeFolderName(item.name) === normalizedName);
+        if (existing) {
+          return existing.id;
+        }
+
         const record = toFolderRecord(folder, get().folders.length);
 
         set((state) => {
           state.folders.push(record);
+          state.folders = ensureDefaultFolders(state.folders);
         });
 
         return record.id;
@@ -106,7 +135,9 @@ export const useNoteStore = create<NoteStore>()(
             return;
           }
 
-          if (updates.name !== undefined) {
+          const isDefaultFolder = DEFAULT_FOLDER_NAME_SET.has(normalizeFolderName(target.name));
+
+          if (updates.name !== undefined && !isDefaultFolder) {
             target.name = updates.name;
           }
 
@@ -117,14 +148,26 @@ export const useNoteStore = create<NoteStore>()(
           if (updates.emoji !== undefined) {
             target.emoji = updates.emoji;
           }
+
+          state.folders = ensureDefaultFolders(state.folders);
         });
       },
       deleteFolder: (id) => {
         set((state) => {
+          const target = state.folders.find((folder) => folder.id === id);
+          if (!target) {
+            return;
+          }
+
+          if (DEFAULT_FOLDER_NAME_SET.has(normalizeFolderName(target.name))) {
+            return;
+          }
+
           state.folders = state.folders.filter((folder) => folder.id !== id);
           state.notes = state.notes.map((note) => (
             note.folderId === id ? { ...note, folderId: undefined, updatedAtIso: new Date().toISOString() } : note
           ));
+          state.folders = ensureDefaultFolders(state.folders);
         });
       },
       addNote: (note) => {
@@ -187,6 +230,15 @@ export const useNoteStore = create<NoteStore>()(
     })),
     {
       name: 'note-store',
+      version: 2,
+      migrate: (persistedState) => {
+        const state = persistedState as { folders?: NoteFolderRecord[]; notes?: NoteRecord[] } | undefined;
+
+        return {
+          folders: ensureDefaultFolders(state?.folders ?? []),
+          notes: state?.notes ?? [],
+        };
+      },
       storage: createJSONStorage(() => storage),
     },
   ),

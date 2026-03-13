@@ -43,7 +43,7 @@ export const getReminderTrigger = (reminder: Reminder): Notifications.Notificati
     default:
       return {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
-        date: dueDate,
+        date: dueDate.getTime() <= Date.now() + 5000 ? new Date(Date.now() + 15000) : dueDate,
       };
   }
 };
@@ -65,6 +65,7 @@ const ensureAndroidChannel = async () => {
 export const requestPermission = async () => {
   const current = await Notifications.getPermissionsAsync();
   if (current.granted) {
+    await ensureAndroidChannel();
     return true;
   }
 
@@ -84,16 +85,21 @@ export const scheduleReminder = async (reminder: Reminder) => {
     return undefined;
   }
 
-  const identifier = await Notifications.scheduleNotificationAsync({
-    content: {
-      title: reminder.title,
-      body: reminder.notes || 'Your reminder is due.',
-      sound: true,
-    },
-    trigger: getReminderTrigger(reminder),
-  });
+  try {
+    const identifier = await Notifications.scheduleNotificationAsync({
+      content: {
+        title: reminder.title,
+        body: reminder.notes || 'Your reminder is due.',
+        sound: true,
+      },
+      trigger: getReminderTrigger(reminder),
+    });
 
-  return identifier;
+    return identifier;
+  } catch (error) {
+    console.warn('Failed to schedule reminder notification', error);
+    return undefined;
+  }
 };
 
 export const cancelReminder = async (notificationId?: string) => {

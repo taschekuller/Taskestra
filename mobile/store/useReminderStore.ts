@@ -40,7 +40,7 @@ const toRecord = (input: AddReminderInput, id: string): ReminderRecord => ({
   title: input.title.trim(),
   notes: input.notes,
   dueDateIso: input.dueDate.toISOString(),
-  listKey: input.listKey === 'work' ? 'work' : 'others',
+  listKey: input.listKey ?? 'others',
   repeatType: input.repeatType ?? 'none',
   isCompleted: false,
   createdAtIso: new Date().toISOString(),
@@ -105,9 +105,7 @@ export const useReminderStore = create<ReminderStore>()(
           title: updates.title ?? found.title,
           notes: updates.notes ?? found.notes,
           dueDateIso: updates.dueDate ? updates.dueDate.toISOString() : found.dueDateIso,
-          listKey: updates.listKey
-            ? (updates.listKey === 'work' ? 'work' : 'others')
-            : (found.listKey === 'work' ? 'work' : 'others'),
+          listKey: updates.listKey ?? found.listKey ?? 'others',
           repeatType: updates.repeatType ?? found.repeatType,
           isCompleted: updates.isCompleted ?? found.isCompleted,
           notificationId: undefined,

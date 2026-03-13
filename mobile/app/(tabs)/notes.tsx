@@ -8,7 +8,8 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { GradientBackground } from '@/components/ui/GradientBackground';
 import { LiquidFab } from '@/components/ui/LiquidFab';
 import { SectionHeader } from '@/components/ui/SectionHeader';
-import { MOCK_NOTES, NOTE_CATEGORIES, type NoteCategory } from '@/constants/MockNotes';
+import { MOCK_NOTES, type NoteCategory } from '@/constants/MockNotes';
+import { getReminderLists } from '@/constants/ReminderLists';
 import { Colors } from '@/constants/Colors';
 import { Layout } from '@/constants/Layout';
 import { useNoteStore } from '@/store/useNoteStore';
@@ -16,18 +17,25 @@ import { useNoteStore } from '@/store/useNoteStore';
 export default function NotesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [selectedCategory, setSelectedCategory] = useState<NoteCategory>('all');
+  const [selectedCategory, setSelectedCategory] = useState<NoteCategory>('work');
   const folderRecords = useNoteStore((state) => state.folders);
   const workFolderColor = useMemo(
     () => folderRecords.find((folder) => folder.name.trim().toLowerCase() === 'work')?.color ?? '#9A7652',
     [folderRecords],
   );
+  const categoryOptions = useMemo(() => getReminderLists(workFolderColor), [workFolderColor]);
 
   const latestNotes = useMemo(
-    () => selectedCategory === 'all'
-      ? MOCK_NOTES
-      : MOCK_NOTES.filter((item) => item.category === selectedCategory),
+    () => MOCK_NOTES.filter((item) => item.category === selectedCategory),
     [selectedCategory],
+  );
+  const categoryTintMap = useMemo(
+    () => Object.fromEntries(categoryOptions.map((item) => [item.key, item.tint])) as Record<NoteCategory, string>,
+    [categoryOptions],
+  );
+  const categoryBorderMap = useMemo(
+    () => Object.fromEntries(categoryOptions.map((item) => [item.key, item.borderColor])) as Record<NoteCategory, string>,
+    [categoryOptions],
   );
 
   const openCreateNote = () => {
@@ -45,7 +53,7 @@ export default function NotesScreen() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.categoryScroll}
           >
-            {NOTE_CATEGORIES.map((category) => {
+            {categoryOptions.map((category) => {
               const active = selectedCategory === category.key;
 
               return (
@@ -53,10 +61,14 @@ export default function NotesScreen() {
                   key={category.key}
                   style={[
                     styles.categoryChip,
-                    active && styles.categoryChipActive,
-                    active && category.key === 'work' ? { borderColor: workFolderColor, backgroundColor: `${workFolderColor}24` } : null,
+                    active
+                      ? {
+                          borderColor: categoryBorderMap[category.key],
+                          backgroundColor: categoryTintMap[category.key],
+                        }
+                      : null,
                   ]}
-                  onPress={() => setSelectedCategory(category.key)}
+                  onPress={() => setSelectedCategory(category.key as NoteCategory)}
                 >
                   <Text style={[styles.categoryChipText, active && styles.categoryChipTextActive]}>
                     {category.label}
@@ -76,7 +88,7 @@ export default function NotesScreen() {
                     contentStyle={[
                       styles.latestCardContent,
                       {
-                        backgroundColor: item.category === 'work' ? `${workFolderColor}2C` : item.tint,
+                        backgroundColor: categoryTintMap[item.category] ?? item.tint,
                       },
                     ]}
                   >

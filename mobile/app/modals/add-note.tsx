@@ -1,12 +1,14 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { NoteEditor } from '@/components/notes/NoteEditor';
+import { BottomActionBar } from '@/components/ui/BottomActionBar';
 import { Chip } from '@/components/ui/Chip';
 import { GlassButton } from '@/components/ui/GlassButton';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GradientBackground } from '@/components/ui/GradientBackground';
+import { CATEGORY_CONFIGS } from '@/constants/Categories';
 import { Colors } from '@/constants/Colors';
 import { Layout } from '@/constants/Layout';
 import { useNoteStore } from '@/store/useNoteStore';
@@ -33,8 +35,35 @@ export default function AddNoteModal() {
   const [noteId, setNoteId] = useState<string | undefined>(existingNote?.id);
   const [title, setTitle] = useState(existingNote?.title ?? '');
   const [content, setContent] = useState(existingNote?.content ?? '');
-  const [folderId, setFolderId] = useState(existingNote?.folderId ?? params.folderId ?? 'others');
+  const [folderId, setFolderId] = useState<string | undefined>(existingNote?.folderId ?? params.folderId);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(existingNote?.updatedAt ?? null);
+
+  const orderedFolders = useMemo(() => {
+    const orderMap = new Map(CATEGORY_CONFIGS.map((category, index) => [category.label.toLowerCase(), index]));
+    return [...folders].sort((a, b) => {
+      const aOrder = orderMap.get(a.name.trim().toLowerCase());
+      const bOrder = orderMap.get(b.name.trim().toLowerCase());
+
+      if (aOrder !== undefined && bOrder !== undefined) {
+        return aOrder - bOrder;
+      }
+
+      if (aOrder !== undefined) {
+        return -1;
+      }
+
+      if (bOrder !== undefined) {
+        return 1;
+      }
+
+      return a.name.localeCompare(b.name);
+    });
+  }, [folders]);
+
+  const othersFolderId = useMemo(
+    () => orderedFolders.find((folder) => folder.name.trim().toLowerCase() === 'others')?.id,
+    [orderedFolders],
+  );
 
   useEffect(() => {
     if (!existingNote) {
@@ -44,9 +73,30 @@ export default function AddNoteModal() {
     setNoteId(existingNote.id);
     setTitle(existingNote.title);
     setContent(existingNote.content);
-    setFolderId(existingNote.folderId ?? 'others');
+    setFolderId(existingNote.folderId ?? othersFolderId);
     setLastSavedAt(existingNote.updatedAt);
-  }, [existingNote]);
+  }, [existingNote, othersFolderId]);
+
+  useEffect(() => {
+    if (!folderId && othersFolderId) {
+      setFolderId(othersFolderId);
+    }
+  }, [folderId, othersFolderId]);
+
+  const persistDraft = useCallback(() => {
+    const normalizedFolderId = folderId ?? othersFolderId;
+
+    if (noteId) {
+      updateNote(noteId, { title, content, folderId: normalizedFolderId });
+      setLastSavedAt(new Date());
+      return noteId;
+    }
+
+    const createdId = addNote({ title, content, folderId: normalizedFolderId });
+    setNoteId(createdId);
+    setLastSavedAt(new Date());
+    return createdId;
+  }, [addNote, content, folderId, noteId, othersFolderId, title, updateNote]);
 
   useEffect(() => {
     const hasContent = title.trim() || content.replace(/<[^>]+>/g, '').trim();
@@ -55,57 +105,65 @@ export default function AddNoteModal() {
     }
 
     const timeout = setTimeout(() => {
-      if (noteId) {
-        updateNote(noteId, { title, content, folderId: folderId === 'others' ? undefined : folderId });
-        setLastSavedAt(new Date());
-        return;
-      }
-
-      const createdId = addNote({ title, content, folderId: folderId === 'others' ? undefined : folderId });
-      setNoteId(createdId);
-      setLastSavedAt(new Date());
+      persistDraft();
     }, 500);
 
     return () => clearTimeout(timeout);
-  }, [addNote, content, folderId, noteId, title, updateNote]);
+  }, [content, persistDraft, title]);
+
+  const onSave = () => {
+    const hasContent = title.trim() || content.replace(/<[^>]+>/g, '').trim();
+    if (!hasContent) {
+      Alert.alert('Empty Note', 'Please add a title or note content before saving.');
+      return;
+    }
+
+    persistDraft();
+    router.back();
+  };
 
   return (
     <GradientBackground>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.container}>
-        <NoteEditor title={title} content={content} onTitleChange={setTitle} onContentChange={setContent} />
+      <View style={styles.root}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.container}>
+          <NoteEditor title={title} content={content} onTitleChange={setTitle} onContentChange={setContent} />
 
-        <GlassCard>
-          <Text style={styles.sectionTitle}>Folder</Text>
-          <View style={styles.chipWrap}>
-            <Chip
-              label="Others"
-              selected={folderId === 'others'}
-              onPress={() => setFolderId('others')}
-            />
-            {folders.map((folder) => (
-              <Chip
-                key={folder.id}
-                label={folder.name}
-                selected={folderId === folder.id}
-                accentColor={folder.color}
-                onPress={() => setFolderId(folder.id)}
-              />
-            ))}
+          <GlassCard>
+            <Text style={styles.sectionTitle}>Folder</Text>
+            <View style={styles.chipWrap}>
+              {orderedFolders.map((folder) => (
+                <Chip
+                  key={folder.id}
+                  label={folder.name}
+                  selected={folderId === folder.id}
+                  accentColor={folder.color}
+                  onPress={() => setFolderId(folder.id)}
+                />
+              ))}
+            </View>
+          </GlassCard>
+
+          {lastSavedAt ? <Text style={styles.savedText}>Auto-saved: {lastSavedAt.toLocaleTimeString('en-US')}</Text> : null}
+        </ScrollView>
+
+        <BottomActionBar>
+          <View style={styles.actionRow}>
+            <GlassButton title="Cancel" onPress={() => router.back()} variant="secondary" style={styles.actionBtn} />
+            <GlassButton title="Save" onPress={onSave} variant="primary" style={styles.actionBtn} />
           </View>
-        </GlassCard>
-
-        {lastSavedAt ? <Text style={styles.savedText}>Auto-saved: {lastSavedAt.toLocaleTimeString('en-US')}</Text> : null}
-
-        <GlassButton title="Close" onPress={() => router.back()} />
-      </ScrollView>
+        </BottomActionBar>
+      </View>
     </GradientBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
   container: {
     padding: Layout.spacing.md,
-    paddingBottom: Layout.spacing.lg,
+    paddingBottom: 150,
     gap: Layout.spacing.sm,
   },
   sectionTitle: {
@@ -123,5 +181,12 @@ const styles = StyleSheet.create({
     color: Colors.glassSubtext,
     textAlign: 'right',
     ...Layout.type.meta,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    gap: Layout.spacing.xs,
+  },
+  actionBtn: {
+    flex: 1,
   },
 });

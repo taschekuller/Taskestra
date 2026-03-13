@@ -1,7 +1,8 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { format, isValid, parse } from 'date-fns';
+import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { format } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { BottomActionBar } from '@/components/ui/BottomActionBar';
 import { Chip } from '@/components/ui/Chip';
@@ -18,6 +19,14 @@ import { useReminderStore } from '@/store/useReminderStore';
 import { toReminder, type ReminderListKey, type RepeatType } from '@/types/models';
 
 const repeatTypes: RepeatType[] = ['none', 'daily', 'weekly', 'monthly'];
+type PickerMode = 'date' | 'time' | null;
+const LIST_ACCENT_COLORS: Record<ReminderListKey, string> = {
+  work: '#9A7652',
+  personal: '#ECA581',
+  school: '#89A8FF',
+  learning: '#81DCB5',
+  others: '#94A3B8',
+};
 
 const getRepeatPreview = (repeatType: RepeatType, date: Date) => {
   if (repeatType === 'none') {
@@ -55,9 +64,10 @@ export default function AddReminderModal() {
 
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
-  const [dueDateInput, setDueDateInput] = useState(format(new Date(), 'yyyy-MM-dd HH:mm'));
+  const [dueDate, setDueDate] = useState(new Date());
   const [listKey, setListKey] = useState<ReminderListKey>('others');
   const [repeatType, setRepeatType] = useState<RepeatType>('none');
+  const [pickerMode, setPickerMode] = useState<PickerMode>(null);
 
   useEffect(() => {
     if (!existingReminder) {
@@ -66,15 +76,14 @@ export default function AddReminderModal() {
 
     setTitle(existingReminder.title);
     setNotes(existingReminder.notes || '');
-    setDueDateInput(format(existingReminder.dueDate, 'yyyy-MM-dd HH:mm'));
+    setDueDate(existingReminder.dueDate);
     setListKey(existingReminder.listKey);
     setRepeatType(existingReminder.repeatType);
   }, [existingReminder]);
 
-  const parsedDate = useMemo(() => parse(dueDateInput, 'yyyy-MM-dd HH:mm', new Date()), [dueDateInput]);
   const repeatPreview = useMemo(
-    () => (isValid(parsedDate) ? getRepeatPreview(repeatType, parsedDate) : 'Please enter a valid date'),
-    [parsedDate, repeatType],
+    () => getRepeatPreview(repeatType, dueDate),
+    [dueDate, repeatType],
   );
   const workFolderColor = useMemo(
     () => folderRecords.find((folder) => folder.name.trim().toLowerCase() === 'work')?.color,
@@ -85,14 +94,37 @@ export default function AddReminderModal() {
     [workFolderColor],
   );
 
+  const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setPickerMode(null);
+    }
+
+    if (event.type === 'dismissed' || !selectedDate) {
+      return;
+    }
+
+    const updated = new Date(dueDate);
+    if (pickerMode === 'date') {
+      updated.setFullYear(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+    } else if (pickerMode === 'time') {
+      updated.setHours(selectedDate.getHours(), selectedDate.getMinutes(), 0, 0);
+    }
+
+    setDueDate(updated);
+  };
+
+  const openPicker = (nextMode: Exclude<PickerMode, null>) => {
+    setPickerMode((current) => (current === nextMode ? null : nextMode));
+  };
+
   const onSave = async () => {
     if (!title.trim()) {
       Alert.alert('Missing Field', 'Reminder title is required.');
       return;
     }
 
-    if (!isValid(parsedDate)) {
-      Alert.alert('Date Error', 'Date format: YYYY-MM-DD HH:mm');
+    if (repeatType === 'none' && dueDate.getTime() <= Date.now() + 15_000) {
+      Alert.alert('Date Error', 'Please choose a future date and time.');
       return;
     }
 
@@ -100,7 +132,7 @@ export default function AddReminderModal() {
       await updateReminder(existingReminder.id, {
         title,
         notes,
-        dueDate: parsedDate,
+        dueDate,
         listKey,
         repeatType,
       });
@@ -108,7 +140,7 @@ export default function AddReminderModal() {
       await addReminder({
         title,
         notes,
-        dueDate: parsedDate,
+        dueDate,
         listKey,
         repeatType,
       });
@@ -143,12 +175,25 @@ export default function AddReminderModal() {
 
           <SectionHeader title="Schedule" />
           <GlassCard>
-            <GlassInput
-              label="Date (YYYY-MM-DD HH:mm)"
-              value={dueDateInput}
-              onChangeText={setDueDateInput}
-              keyboardType="numbers-and-punctuation"
-            />
+            <Pressable style={styles.scheduleRow} onPress={() => openPicker('date')}>
+              <Text style={styles.scheduleLabel}>Date</Text>
+              <Text style={styles.scheduleValue}>{format(dueDate, 'EEE, d MMM yyyy')}</Text>
+            </Pressable>
+            <Pressable style={styles.scheduleRow} onPress={() => openPicker('time')}>
+              <Text style={styles.scheduleLabel}>Time</Text>
+              <Text style={styles.scheduleValue}>{format(dueDate, 'HH:mm')}</Text>
+            </Pressable>
+            {pickerMode ? (
+              <View style={styles.pickerWrap}>
+                <DateTimePicker
+                  value={dueDate}
+                  mode={pickerMode}
+                  display={Platform.OS === 'ios' ? (pickerMode === 'date' ? 'inline' : 'spinner') : 'default'}
+                  onChange={onDateChange}
+                  minimumDate={repeatType === 'none' ? new Date() : undefined}
+                />
+              </View>
+            ) : null}
             <Text style={styles.helper}>{repeatPreview}</Text>
           </GlassCard>
 
@@ -174,7 +219,7 @@ export default function AddReminderModal() {
                   key={option.key}
                   label={option.label}
                   selected={listKey === option.key}
-                  accentColor={option.key === 'work' ? (workFolderColor ?? '#9A7652') : undefined}
+                  accentColor={option.key === 'work' ? (workFolderColor ?? LIST_ACCENT_COLORS.work) : LIST_ACCENT_COLORS[option.key]}
                   onPress={() => setListKey(option.key as ReminderListKey)}
                 />
               ))}
@@ -209,6 +254,36 @@ const styles = StyleSheet.create({
   multiline: {
     minHeight: 90,
     textAlignVertical: 'top',
+  },
+  scheduleRow: {
+    minHeight: 44,
+    borderRadius: Layout.radius.md,
+    borderWidth: 1,
+    borderColor: Colors.border.soft,
+    backgroundColor: Colors.surface.level2,
+    paddingHorizontal: Layout.spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: Layout.spacing.xs,
+  },
+  scheduleLabel: {
+    color: Colors.text.secondary,
+    ...Layout.type.caption,
+    fontWeight: '700',
+  },
+  scheduleValue: {
+    color: Colors.text.primary,
+    ...Layout.type.body,
+    fontWeight: '600',
+  },
+  pickerWrap: {
+    borderRadius: Layout.radius.md,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: Colors.border.soft,
+    backgroundColor: Colors.surface.level2,
+    marginBottom: Layout.spacing.xs,
   },
   helper: {
     marginTop: Layout.spacing.xs,

@@ -235,7 +235,7 @@ export default function RemindersScreen() {
           </View>
         </View>
 
-        <View style={[styles.fabWrap, { bottom: insets.bottom + 16 }]}>
+        <View style={[styles.fabWrap, { bottom: insets.bottom + 90 }]}>
           <LiquidFab
             tone="accent"
             icon={<Ionicons name="add" size={26} color={Colors.noteAccentStrong} />}

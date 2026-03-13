@@ -1,46 +1,47 @@
 import type { ReminderListKey } from '@/types/models';
+import { CATEGORY_CONFIGS } from '@/constants/Categories';
 
 export interface ReminderListMeta {
-  key: 'work' | 'others';
+  key: ReminderListKey;
   label: string;
   icon: string;
   tint: string;
   borderColor: string;
 }
 
-const DEFAULT_WORK_COLOR = '#9A7652';
-
 const toTint = (hex: string, alpha = '2A') => `${hex}${alpha}`;
 
 export const getReminderLists = (workColor?: string): ReminderListMeta[] => {
-  const normalizedWork = workColor ?? DEFAULT_WORK_COLOR;
+  return CATEGORY_CONFIGS.map((category) => {
+    if (category.key === 'work') {
+      const normalizedWork = workColor ?? category.folderColor;
+      return {
+        key: category.key,
+        label: category.label,
+        icon: category.icon,
+        tint: toTint(normalizedWork, '2A'),
+        borderColor: toTint(normalizedWork, 'A6'),
+      };
+    }
 
-  return [
-    {
-      key: 'work',
-      label: 'Work',
-      icon: 'briefcase-outline',
-      tint: toTint(normalizedWork, '2A'),
-      borderColor: toTint(normalizedWork, 'A6'),
-    },
-    {
-      key: 'others',
-      label: 'Others',
-      icon: 'ellipsis-horizontal-circle-outline',
-      tint: 'rgba(148,163,184,0.22)',
-      borderColor: 'rgba(148,163,184,0.56)',
-    },
-  ];
+    return {
+      key: category.key,
+      label: category.label,
+      icon: category.icon,
+      tint: category.tint,
+      borderColor: category.borderColor,
+    };
+  });
 };
 
 export const getReminderListMap = (workColor?: string): Record<ReminderListKey, ReminderListMeta> => {
-  const [work, others] = getReminderLists(workColor);
+  const [work, personal, school, learning, others] = getReminderLists(workColor);
 
   return {
     work,
+    personal,
+    school,
+    learning,
     others,
-    personal: others,
-    sport: others,
-    university: others,
   };
 };
