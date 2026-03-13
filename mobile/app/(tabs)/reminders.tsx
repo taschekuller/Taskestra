@@ -101,7 +101,6 @@ export default function RemindersScreen() {
     <GradientBackground>
       <View style={[styles.container, { paddingTop: insets.top + Layout.spacing.xs }]}>
         <Text style={styles.title}>Reminders</Text>
-        <Text style={styles.subtitle}>Today first. Lists next.</Text>
 
         <View style={styles.content}>
           <View style={styles.todaySection}>
@@ -256,12 +255,6 @@ const styles = StyleSheet.create({
     color: Colors.text.primary,
     ...Layout.type.title1,
     fontWeight: '800',
-  },
-  subtitle: {
-    color: Colors.text.secondary,
-    ...Layout.type.caption,
-    marginTop: 2,
-    marginBottom: Layout.spacing.xs,
   },
   content: {
     flex: 1,
