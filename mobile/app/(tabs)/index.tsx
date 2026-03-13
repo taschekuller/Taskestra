@@ -11,6 +11,7 @@ import { type WeeklyGroup, WeeklySection } from '@/components/overview/WeeklySec
 import { GlassButton } from '@/components/ui/GlassButton';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GradientBackground } from '@/components/ui/GradientBackground';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { Colors } from '@/constants/Colors';
 import { Layout } from '@/constants/Layout';
 import { useOverdueTasks } from '@/hooks/useOverdueTasks';
@@ -70,6 +71,8 @@ export default function OverviewScreen() {
             />
           }
         >
+          <ScreenHeader title="Overview" onPressSettings={() => router.push('/modals/settings')} />
+
           <GlassCard>
             <Text style={styles.greeting}>Today Focus</Text>
             <Text style={styles.dateText}>{format(new Date(), 'd MMMM yyyy, EEEE')}</Text>
@@ -125,6 +128,7 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: Layout.spacing.md,
     paddingBottom: 220,
+    gap: Layout.spacing.sm,
   },
   greeting: {
     color: Colors.text.primary,

@@ -55,6 +55,10 @@ export default function RootLayout() {
             options={{ title: 'Event Details', presentation: 'modal' }}
           />
           <Stack.Screen
+            name="modals/settings"
+            options={{ title: 'Settings', presentation: 'modal' }}
+          />
+          <Stack.Screen
             name="auth/google"
             options={{ title: 'Google OAuth', presentation: 'modal' }}
           />

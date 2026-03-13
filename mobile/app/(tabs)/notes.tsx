@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GradientBackground } from '@/components/ui/GradientBackground';
 import { LiquidFab } from '@/components/ui/LiquidFab';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { MOCK_NOTES, type NoteCategory } from '@/constants/MockNotes';
 import { getReminderLists } from '@/constants/ReminderLists';
@@ -45,7 +46,7 @@ export default function NotesScreen() {
   return (
     <GradientBackground>
       <View style={[styles.container, { paddingTop: insets.top + 10 }]}>
-        <Text style={styles.title}>Notes</Text>
+        <ScreenHeader title="Notes" onPressSettings={() => router.push('/modals/settings')} />
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
           <ScrollView
@@ -124,11 +125,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: Layout.spacing.md,
-  },
-  title: {
-    color: Colors.text.primary,
-    ...Layout.type.title2,
-    fontWeight: '800',
   },
   scrollContent: {
     paddingTop: Layout.spacing.sm,

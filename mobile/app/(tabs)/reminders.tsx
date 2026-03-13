@@ -10,6 +10,7 @@ import { ReminderItem } from '@/components/reminders/ReminderItem';
 import { EmptyStateCard } from '@/components/ui/EmptyStateCard';
 import { GradientBackground } from '@/components/ui/GradientBackground';
 import { LiquidFab } from '@/components/ui/LiquidFab';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { getReminderLists } from '@/constants/ReminderLists';
 import { Colors } from '@/constants/Colors';
@@ -100,7 +101,7 @@ export default function RemindersScreen() {
   return (
     <GradientBackground>
       <View style={[styles.container, { paddingTop: insets.top + Layout.spacing.xs }]}>
-        <Text style={styles.title}>Reminders</Text>
+        <ScreenHeader title="Reminders" onPressSettings={() => router.push('/modals/settings')} />
 
         <View style={styles.content}>
           <View style={styles.todaySection}>
@@ -250,11 +251,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: Layout.spacing.md,
-  },
-  title: {
-    color: Colors.text.primary,
-    ...Layout.type.title1,
-    fontWeight: '800',
   },
   content: {
     flex: 1,

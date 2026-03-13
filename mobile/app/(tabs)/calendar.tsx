@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import {
   addMinutes,
@@ -17,9 +18,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EventCard } from '@/components/calendar/EventCard';
 import { EmptyStateCard } from '@/components/ui/EmptyStateCard';
-import { GlassButton } from '@/components/ui/GlassButton';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GradientBackground } from '@/components/ui/GradientBackground';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { Colors } from '@/constants/Colors';
 import { Layout } from '@/constants/Layout';
@@ -31,6 +32,7 @@ import { useReminderStore } from '@/store/useReminderStore';
 import { toReminder, type CalendarEvent } from '@/types/models';
 
 export default function CalendarScreen() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
 
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -40,7 +42,7 @@ export default function CalendarScreen() {
   const folderRecords = useNoteStore((state) => state.folders);
   const reminderRecords = useReminderStore((state) => state.reminders);
 
-  const { accessToken, isConnected, isLoading: authLoading, signIn, signOut } = useGoogleAuth();
+  const { accessToken, isConnected } = useGoogleAuth();
   const { events, refresh } = useCalendarEvents(accessToken);
 
   const workFolderColor = useMemo(
@@ -113,22 +115,7 @@ export default function CalendarScreen() {
   return (
     <GradientBackground>
       <View style={[styles.container, { paddingTop: insets.top + 10 }]}>
-        <View style={styles.headerRow}>
-          <Text style={styles.title}>Calendar</Text>
-          <GlassButton
-            title={isConnected ? 'Connected' : 'Google'}
-            size="sm"
-            variant={isConnected ? 'secondary' : 'surface'}
-            onPress={() => {
-              if (isConnected) {
-                void signOut();
-                return;
-              }
-              void signIn();
-            }}
-            disabled={authLoading}
-          />
-        </View>
+        <ScreenHeader title="Calendar" onPressSettings={() => router.push('/modals/settings')} />
 
         <GlassCard>
           <Pressable
@@ -176,9 +163,7 @@ export default function CalendarScreen() {
           {selectedDayEvents.length === 0 ? (
             <EmptyStateCard
               title="No events for this day"
-              description={isConnected ? 'Try another date in this week.' : 'Connect Google or add reminders to populate timeline.'}
-              ctaLabel={!isConnected ? 'Connect with Google' : undefined}
-              onCtaPress={!isConnected ? () => { void signIn(); } : undefined}
+              description={isConnected ? 'Try another date in this week.' : 'Connect Google Calendar from Settings to see synced events.'}
               iconName="calendar-clear-outline"
             />
           ) : (
@@ -261,16 +246,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: Layout.spacing.md,
     gap: Layout.spacing.sm,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  title: {
-    color: Colors.text.primary,
-    ...Layout.type.title1,
-    fontWeight: '800',
   },
   monthTrigger: {
     flexDirection: 'row',
